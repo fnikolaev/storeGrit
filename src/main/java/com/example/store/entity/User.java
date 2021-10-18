@@ -21,6 +21,12 @@ public class User {
         this.password = userLogRegDTO.getPassword();
     }
 
+    public User(String email, String password) {
+        this.id = null;
+        this.email = email;
+        this.password = password;
+    }
+
     public User() {
     }
 }

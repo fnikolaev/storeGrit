@@ -19,4 +19,12 @@ public class GoodsService {
     public List<Goods> getGoods(){
         return goodsRepository.findAll();
     }
+
+    public void deleteAllGoods(){
+        goodsRepository.deleteAll();
+    }
+
+    public void addGoods(Goods goods){
+        goodsRepository.save(goods);
+    }
 }

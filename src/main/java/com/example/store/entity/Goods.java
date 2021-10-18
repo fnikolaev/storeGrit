@@ -14,4 +14,14 @@ public class Goods {
     private String title;
     private int available;
     private int price;
+
+    public Goods(String title, int available, int price) {
+        this.id = null;
+        this.title = title;
+        this.available = available;
+        this.price = price;
+    }
+
+    public Goods() {
+    }
 }
