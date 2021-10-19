@@ -23,7 +23,28 @@ public class CartRecordService {
         return cartRecordRepository.findCartRecordsByUser(user);
     }
 
-    public void addCartRecord(CartAdditionDTO cartAdditionDTO, User user, Goods goods){
-        cartRecordRepository.save(new CartRecord(user, goods, cartAdditionDTO.getQuantity()));
+    public void addCartRecord(CartAdditionDTO cartAdditionDTO, User user, Goods goods, int ordinal){
+        cartRecordRepository.save(new CartRecord(user, goods, cartAdditionDTO.getQuantity(), ordinal));
+    }
+
+    public void deleteAllRecords(){
+        cartRecordRepository.deleteAll();
+    }
+
+    public CartRecord getRecordByUserGoods(User user, Goods goods){
+        return cartRecordRepository.findCartRecordsByUserAndGoods(user,goods);
+    }
+
+    public CartRecord getRecordByUserAndOrdinal(User user, int ordinal){
+        return cartRecordRepository.findCartRecordByUserAndOrdinal(user, ordinal);
+    }
+
+    public void deleteRecord(CartRecord cartRecord){
+        cartRecordRepository.delete(cartRecord);
+    }
+
+    public void modifyQuantity(CartRecord cartRecord, int difference){
+        cartRecord.setQuantity(cartRecord.getQuantity()+difference);
+        cartRecordRepository.save(cartRecord);
     }
 }

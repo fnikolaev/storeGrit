@@ -1,11 +1,13 @@
 package com.example.store.service;
 
 import com.example.store.dto.CartAdditionDTO;
+import com.example.store.dto.GoodsDTO;
 import com.example.store.entity.Goods;
 import com.example.store.repository.GoodsRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -21,8 +23,20 @@ public class GoodsService {
         return goodsRepository.getById(id);
     }
 
+    public Goods goodsByTitle(String title){
+        return goodsRepository.findByTitle(title);
+    }
+
     public List<Goods> getAllStoresGoods(){
         return goodsRepository.findAll();
+    }
+
+    public List<GoodsDTO> responseGoodsList(List<Goods> goodsList){
+        List<GoodsDTO> goodsDTOS = new ArrayList<>();
+        for(Goods goods : goodsList){
+            goodsDTOS.add(new GoodsDTO(goods));
+        }
+        return goodsDTOS;
     }
 
     public void deleteAllGoods(){
@@ -40,9 +54,21 @@ public class GoodsService {
         return true;
     }
 
+    public boolean enoughQuantityInt(Long goodsId, int quantity){
+        int available = goodsRepository.getById(goodsId).getAvailable();
+        if(available < quantity)
+            return false;
+        return true;
+    }
+
     public void decreaseAvailable(CartAdditionDTO cartAdditionDTO){
         Goods goods = goodsRepository.getById(cartAdditionDTO.getId());
         goods.setAvailable(goods.getAvailable() - cartAdditionDTO.getQuantity());
+        goodsRepository.save(goods);
+    }
+
+    public void modifyGoodsAvailable(Goods goods, int difference){
+        goods.setAvailable(goods.getAvailable() - difference);
         goodsRepository.save(goods);
     }
 }

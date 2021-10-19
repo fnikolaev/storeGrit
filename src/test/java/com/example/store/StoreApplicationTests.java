@@ -1,8 +1,10 @@
 package com.example.store;
 
+import com.example.store.dto.CartAdditionDTO;
 import com.example.store.dto.UserLogRegDTO;
 import com.example.store.entity.Goods;
 import com.example.store.entity.User;
+import com.example.store.service.CartRecordService;
 import com.example.store.service.GoodsService;
 import com.example.store.service.UserService;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -17,8 +19,7 @@ import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.web.context.request.RequestContextHolder;
 
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -40,16 +41,23 @@ class StoreApplicationTests {
     @Autowired
     private GoodsService goodsService;
 
+    @Autowired
+    private CartRecordService cartRecordService;
+
 
     @BeforeAll
     public void initDb(){
         userService.deleteAllUsers();
         userService.addUser(new User("busymail@mail.ru", "123"));
+        userService.addUser(new User("cartuser@mail.ru", "123"));
+        userService.addUser(new User("deleteuser@mail.ru", "123"));
 
         goodsService.deleteAllGoods();
         goodsService.addGoods(new Goods("pen", 10,25));
         goodsService.addGoods(new Goods("charger", 32,240));
+        goodsService.addGoods(new Goods("cup", 40,50));
 
+        cartRecordService.deleteAllRecords();
     }
 
     @Test()
@@ -104,21 +112,84 @@ class StoreApplicationTests {
                 .andExpect(jsonPath("$[0].price").value(25))
                 .andExpect(jsonPath("$[1].title").value("charger"))
                 .andExpect(jsonPath("$[1].available").value(32))
-                .andExpect(jsonPath("$[1].price").value(240));
+                .andExpect(jsonPath("$[1].price").value(240))
+                .andExpect(jsonPath("$[2].title").value("cup"))
+                .andExpect(jsonPath("$[2].available").value(40))
+                .andExpect(jsonPath("$[2].price").value(50));
     }
 
     @Test()
     @WithMockUser(username = "busymail@mail.ru",password = "123")
-    public void teststh() throws Exception {
+    public void testAddToCart() throws Exception {
+        long chargerId = goodsService.goodsByTitle("charger").getId();
+        CartAdditionDTO cartAdditionDTO = new CartAdditionDTO(chargerId, 2);
 
-        this.mockMvc.perform(get("/api/goods"))
-                .andDo(print()).andExpect(status().isOk())
-                .andExpect(jsonPath("$[0].title").value("pen"))
-                .andExpect(jsonPath("$[0].available").value(10))
-                .andExpect(jsonPath("$[0].price").value(25))
-                .andExpect(jsonPath("$[1].title").value("charger"))
-                .andExpect(jsonPath("$[1].available").value(32))
-                .andExpect(jsonPath("$[1].price").value(240));
+        this.mockMvc.perform(post("/api/cart/add")
+                .content(objectMapper.writeValueAsString(cartAdditionDTO))
+                .contentType(MediaType.APPLICATION_JSON))
+                .andDo(print()).andExpect(status().isOk());
     }
 
+    @Test()
+    @WithMockUser(username = "busymail@mail.ru",password = "123")
+    public void testNotEnoughGoods() throws Exception {
+        long chargerId = goodsService.goodsByTitle("charger").getId();
+        CartAdditionDTO cartAdditionDTO = new CartAdditionDTO(chargerId, 100);
+
+        this.mockMvc.perform(post("/api/cart/add")
+                        .content(objectMapper.writeValueAsString(cartAdditionDTO))
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andDo(print()).andExpect(status().isBadRequest());
+    }
+
+    @Test()
+    @WithMockUser(username = "cartuser@mail.ru",password = "123")
+    public void testCartView() throws Exception {
+        long chargerId = goodsService.goodsByTitle("cup").getId();
+        long penId = goodsService.goodsByTitle("pen").getId();
+        CartAdditionDTO cartAdditionDTO = new CartAdditionDTO(chargerId, 2);
+        CartAdditionDTO cartAdditionDTO1 = new CartAdditionDTO(penId, 1);
+
+        this.mockMvc.perform(post("/api/cart/add")
+                        .content(objectMapper.writeValueAsString(cartAdditionDTO))
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andDo(print()).andExpect(status().isOk());
+
+        this.mockMvc.perform(post("/api/cart/add")
+                        .content(objectMapper.writeValueAsString(cartAdditionDTO1))
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andDo(print()).andExpect(status().isOk());
+
+        this.mockMvc.perform(get("/api/cart"))
+                .andDo(print()).andExpect(status().isOk())
+                .andExpect(jsonPath("Sum").value(125));
+    }
+
+    @Test()
+    @WithMockUser(username = "deleteuser@mail.ru",password = "123")
+    public void deleteFromCart() throws Exception {
+        long chargerId = goodsService.goodsByTitle("cup").getId();
+        long penId = goodsService.goodsByTitle("pen").getId();
+        CartAdditionDTO cartAdditionDTO = new CartAdditionDTO(chargerId, 1);
+        CartAdditionDTO cartAdditionDTO1 = new CartAdditionDTO(penId, 1);
+
+        this.mockMvc.perform(post("/api/cart/add")
+                        .content(objectMapper.writeValueAsString(cartAdditionDTO))
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andDo(print()).andExpect(status().isOk());
+
+        this.mockMvc.perform(post("/api/cart/add")
+                        .content(objectMapper.writeValueAsString(cartAdditionDTO1))
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andDo(print()).andExpect(status().isOk());
+
+        this.mockMvc.perform(delete("/api/cart/delete?title=pen")
+                        .content(objectMapper.writeValueAsString(cartAdditionDTO1))
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andDo(print()).andExpect(status().isOk());
+
+        this.mockMvc.perform(get("/api/cart"))
+                .andDo(print()).andExpect(status().isOk())
+                .andExpect(jsonPath("Sum").value(50));
+    }
 }

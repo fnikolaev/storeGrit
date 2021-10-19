@@ -21,11 +21,19 @@ public class CartRecord {
     private Goods goods;
 
     private int quantity;
+    private int ordinal;
 
     public CartRecord(User user, Goods goods, int quantity) {
         this.user = user;
         this.goods = goods;
         this.quantity = quantity;
+    }
+
+    public CartRecord(User user, Goods goods, int quantity, int ordinal) {
+        this.user = user;
+        this.goods = goods;
+        this.quantity = quantity;
+        this.ordinal = ordinal;
     }
 
     public CartRecord() {
