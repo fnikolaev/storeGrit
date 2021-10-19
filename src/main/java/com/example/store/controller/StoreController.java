@@ -2,7 +2,6 @@ package com.example.store.controller;
 
 import com.example.store.service.GoodsService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Scope;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -19,6 +18,6 @@ public class StoreController {
 
     @GetMapping("goods")
     public ResponseEntity allGoods() {
-        return ResponseEntity.ok(goodsService.getGoods());
+        return ResponseEntity.ok(goodsService.getAllStoresGoods());
     }
 }

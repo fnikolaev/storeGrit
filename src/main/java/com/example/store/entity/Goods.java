@@ -3,6 +3,7 @@ package com.example.store.entity;
 import lombok.Data;
 
 import javax.persistence.*;
+import java.util.List;
 
 @Entity
 @Data
@@ -14,6 +15,8 @@ public class Goods {
     private String title;
     private int available;
     private int price;
+    @OneToMany(mappedBy = "goods")
+    private List<CartRecord> cartRecords;
 
     public Goods(String title, int available, int price) {
         this.id = null;

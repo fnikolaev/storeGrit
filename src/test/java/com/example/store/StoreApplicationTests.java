@@ -13,10 +13,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
+import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.web.context.request.RequestContextHolder;
 
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -45,6 +48,7 @@ class StoreApplicationTests {
 
         goodsService.deleteAllGoods();
         goodsService.addGoods(new Goods("pen", 10,25));
+        goodsService.addGoods(new Goods("charger", 32,240));
 
     }
 
@@ -90,20 +94,31 @@ class StoreApplicationTests {
     }
 
     @Test()
+    @WithMockUser(username = "busymail@mail.ru",password = "123")
     public void testGetGoods() throws Exception {
-        UserLogRegDTO userLogRegDTO = new UserLogRegDTO("busymail@mail.ru", "123");
 
-        this.mockMvc.perform(post("/api/login")
-                        .content(objectMapper.writeValueAsString(userLogRegDTO))
-                        .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk());
-
-        this.mockMvc.perform(post("/api/goods")
-                        .content(objectMapper.writeValueAsString(userLogRegDTO))
-                        .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk());
+        this.mockMvc.perform(get("/api/goods"))
+                .andDo(print()).andExpect(status().isOk())
+                .andExpect(jsonPath("$[0].title").value("pen"))
+                .andExpect(jsonPath("$[0].available").value(10))
+                .andExpect(jsonPath("$[0].price").value(25))
+                .andExpect(jsonPath("$[1].title").value("charger"))
+                .andExpect(jsonPath("$[1].available").value(32))
+                .andExpect(jsonPath("$[1].price").value(240));
     }
 
+    @Test()
+    @WithMockUser(username = "busymail@mail.ru",password = "123")
+    public void teststh() throws Exception {
 
+        this.mockMvc.perform(get("/api/goods"))
+                .andDo(print()).andExpect(status().isOk())
+                .andExpect(jsonPath("$[0].title").value("pen"))
+                .andExpect(jsonPath("$[0].available").value(10))
+                .andExpect(jsonPath("$[0].price").value(25))
+                .andExpect(jsonPath("$[1].title").value("charger"))
+                .andExpect(jsonPath("$[1].available").value(32))
+                .andExpect(jsonPath("$[1].price").value(240));
+    }
 
 }

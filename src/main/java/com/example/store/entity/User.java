@@ -4,6 +4,7 @@ import com.example.store.dto.UserLogRegDTO;
 import lombok.Data;
 
 import javax.persistence.*;
+import java.util.List;
 
 @Data
 @Entity
@@ -14,6 +15,8 @@ public class User {
     private Long id;
     private String email;
     private String password;
+    @OneToMany(mappedBy = "user")
+    private List<CartRecord> cartRecords;
 
     public User(UserLogRegDTO userLogRegDTO) {
         this.id = null;

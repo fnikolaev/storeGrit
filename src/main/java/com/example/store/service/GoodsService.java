@@ -1,5 +1,6 @@
 package com.example.store.service;
 
+import com.example.store.dto.CartAdditionDTO;
 import com.example.store.entity.Goods;
 import com.example.store.repository.GoodsRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,7 +17,11 @@ public class GoodsService {
         this.goodsRepository = goodsRepository;
     }
 
-    public List<Goods> getGoods(){
+    public Goods goodsByID(Long id){
+        return goodsRepository.getById(id);
+    }
+
+    public List<Goods> getAllStoresGoods(){
         return goodsRepository.findAll();
     }
 
@@ -25,6 +30,19 @@ public class GoodsService {
     }
 
     public void addGoods(Goods goods){
+        goodsRepository.save(goods);
+    }
+
+    public boolean enoughQuantity(CartAdditionDTO cartAdditionDTO){
+        int available = goodsRepository.getById(cartAdditionDTO.getId()).getAvailable();
+        if(available < cartAdditionDTO.getQuantity())
+            return false;
+        return true;
+    }
+
+    public void decreaseAvailable(CartAdditionDTO cartAdditionDTO){
+        Goods goods = goodsRepository.getById(cartAdditionDTO.getId());
+        goods.setAvailable(goods.getAvailable() - cartAdditionDTO.getQuantity());
         goodsRepository.save(goods);
     }
 }

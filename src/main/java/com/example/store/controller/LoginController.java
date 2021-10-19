@@ -1,7 +1,6 @@
 package com.example.store.controller;
 
 import com.example.store.dto.UserLogRegDTO;
-import com.example.store.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.http.HttpStatus;
@@ -24,7 +23,7 @@ import java.util.Map;
 @Scope(value = "session")
 @RequestMapping(value = "/api/")
 public class LoginController {
-    private DaoAuthenticationProvider daoAuthenticationProvider;
+    private final DaoAuthenticationProvider daoAuthenticationProvider;
 
     @Autowired
     public LoginController(DaoAuthenticationProvider daoAuthenticationProvider) {
