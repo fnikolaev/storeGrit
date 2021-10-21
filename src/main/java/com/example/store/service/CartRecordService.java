@@ -1,6 +1,7 @@
 package com.example.store.service;
 
 import com.example.store.dto.CartAdditionDTO;
+import com.example.store.dto.CartResponseDTO;
 import com.example.store.entity.CartRecord;
 import com.example.store.entity.Goods;
 import com.example.store.entity.User;
@@ -8,7 +9,9 @@ import com.example.store.repository.CartRecordRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Service
 public class CartRecordService {
@@ -46,5 +49,20 @@ public class CartRecordService {
     public void modifyQuantity(CartRecord cartRecord, int difference){
         cartRecord.setQuantity(cartRecord.getQuantity()+difference);
         cartRecordRepository.save(cartRecord);
+    }
+
+    public void updateCardRecord(){
+
+    }
+
+    public Map<Object,Object> getUsersCart(List<CartRecord> cartRecords){
+        Map<Object, Object> response = new HashMap<>();
+        int sum=0;
+        for(CartRecord record : cartRecords){
+            response.put(record.getOrdinal(), new CartResponseDTO(record.getGoods().getTitle(), record.getQuantity()));
+            sum += record.getQuantity()*record.getGoods().getPrice();
+        }
+        response.put("Sum", sum);
+        return response;
     }
 }

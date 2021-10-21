@@ -29,14 +29,9 @@ public class UserService {
 
     public boolean userExists(String email){
         if(userRepository.findByEmail(email)!=null){
-            System.out.println("try to send 409");
             return true;
         }
         return false;
-    }
-
-    public void deleteUser(User user){
-        userRepository.delete(user);
     }
 
     public void deleteAllUsers(){

@@ -15,6 +15,7 @@
     <description>store</description>
     <properties>
         <java.version>11</java.version>
+        <io-rest-assured.version>4.0.0</io-rest-assured.version>
     </properties>
     <dependencies>
         <dependency>
@@ -76,6 +77,40 @@
             <artifactId>spring-session</artifactId>
             <version>1.3.5.RELEASE</version>
         </dependency>
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>io.rest-assured</groupId>
+            <artifactId>rest-assured</artifactId>
+            <version>${io-rest-assured.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>io.rest-assured</groupId>
+            <artifactId>rest-assured-common</artifactId>
+            <version>${io-rest-assured.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>io.rest-assured</groupId>
+            <artifactId>json-path</artifactId>
+            <version>${io-rest-assured.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>io.rest-assured</groupId>
+            <artifactId>xml-path</artifactId>
+            <version>${io-rest-assured.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.awaitility</groupId>
+            <artifactId>awaitility</artifactId>
+            <version>4.0.0</version>
+            <scope>test</scope>
+        </dependency>
+
 
     </dependencies>
 

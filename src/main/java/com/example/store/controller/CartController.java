@@ -19,7 +19,7 @@ import java.util.List;
 import java.util.Map;
 
 @RestController
-@RequestMapping(value = "/api/")
+@RequestMapping(value = "/api/cart")
 public class CartController {
     private final CartRecordService cartRecordService;
     private final UserService userService;
@@ -32,23 +32,17 @@ public class CartController {
         this.goodsService= goodsService;
     }
 
-    @GetMapping("cart")
-    public ResponseEntity usersCart(Principal principal) {
+    @GetMapping()
+    public ResponseEntity<Map<Object, Object>> usersCart(Principal principal) {
         User user = userService.findByEmail(principal.getName());
         List<CartRecord> cartRecords = cartRecordService.getUsersCartRecords(user);
-        Map<Object, Object> response = new HashMap<>();
-        int sum=0;
-        for(CartRecord record : cartRecords){
-            response.put(record.getOrdinal(), new CartResponseDTO(record.getGoods().getTitle(), record.getQuantity()));
-            sum += record.getQuantity()*record.getGoods().getPrice();
-        }
-        response.put("Sum", sum);
+        Map<Object, Object> response = cartRecordService.getUsersCart(cartRecords);
 
         return ResponseEntity.ok(response);
     }
 
-    @PostMapping("cart/add")
-    public ResponseEntity addToCart(@RequestBody CartAdditionDTO cartAdditionDTO, Principal principal) {
+    @PostMapping("/add")
+    public ResponseEntity<String> addToCart(@RequestBody CartAdditionDTO cartAdditionDTO, Principal principal) {
         User user = userService.findByEmail(principal.getName());
         if(goodsService.enoughQuantity(cartAdditionDTO)){
             int numOfRecords = cartRecordService.getUsersCartRecords(user).size();
@@ -60,7 +54,7 @@ public class CartController {
         return new ResponseEntity(null, HttpStatus.BAD_REQUEST);
     }
 
-    @DeleteMapping("cart/delete")
+    @DeleteMapping("/delete")
     public ResponseEntity deleteCartRecord(String title, Principal principal){
         User user = userService.findByEmail(principal.getName());
         Goods goods = goodsService.goodsByTitle(title);
@@ -70,7 +64,7 @@ public class CartController {
         return ResponseEntity.ok("deleted from cart");
     }
 
-    @PatchMapping("cart/update")
+    @PatchMapping("/update")
     public ResponseEntity updateCartRecord(@RequestBody CartAdditionDTO cartAdditionDTO, Principal principal){
         User user = userService.findByEmail(principal.getName());
         CartRecord cartRecord = cartRecordService.getRecordByUserAndOrdinal(user, Math.toIntExact(cartAdditionDTO.getId()));
