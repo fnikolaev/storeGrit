@@ -48,14 +48,14 @@ public class GoodsService {
     }
 
     public boolean enoughQuantity(CartAdditionDTO cartAdditionDTO){
-        int available = goodsRepository.getById(cartAdditionDTO.getId()).getAvailable();
+        Long available = goodsRepository.getById(cartAdditionDTO.getId()).getAvailable();
         if(available < cartAdditionDTO.getQuantity())
             return false;
         return true;
     }
 
-    public boolean enoughQuantityInt(Long goodsId, int quantity){
-        int available = goodsRepository.getById(goodsId).getAvailable();
+    public boolean enoughQuantityLong(Long goodsId, Long quantity){
+        Long available = goodsRepository.getById(goodsId).getAvailable();
         if(available < quantity)
             return false;
         return true;
@@ -67,7 +67,7 @@ public class GoodsService {
         goodsRepository.save(goods);
     }
 
-    public void modifyGoodsAvailable(Goods goods, int difference){
+    public void modifyGoodsAvailable(Goods goods, Long difference){
         goods.setAvailable(goods.getAvailable() - difference);
         goodsRepository.save(goods);
     }

@@ -13,12 +13,11 @@ public class Goods {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     private String title;
-    private int available;
-    private int price;
-    @OneToMany(mappedBy = "goods")
-    private List<CartRecord> cartRecords;
+    private Long available;
+    private Long price;
 
-    public Goods(String title, int available, int price) {
+
+    public Goods(String title, Long available, Long price) {
         this.id = null;
         this.title = title;
         this.available = available;

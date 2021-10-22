@@ -1,68 +1,77 @@
 package com.example.store.service;
 
 import com.example.store.dto.CartAdditionDTO;
-import com.example.store.dto.CartResponseDTO;
+import com.example.store.dto.CartDTO;
 import com.example.store.entity.CartRecord;
 import com.example.store.entity.Goods;
-import com.example.store.entity.User;
-import com.example.store.repository.CartRecordRepository;
-import org.springframework.beans.factory.annotation.Autowired;
+import com.example.store.repository.GoodsRepository;
 import org.springframework.stereotype.Service;
 
-import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 @Service
 public class CartRecordService {
-    private final CartRecordRepository cartRecordRepository;
+    private final CartRecord cartRecords;
+    private final GoodsRepository goodsRepository;
+    private final GoodsService goodsService;
 
-    @Autowired
-    public CartRecordService(CartRecordRepository cartRecordRepository) {
-        this.cartRecordRepository = cartRecordRepository;
+
+    public CartRecordService(CartRecord cartRecord, GoodsRepository goodsRepository, GoodsService goodsService) {
+        this.cartRecords = cartRecord;
+        this.goodsRepository = goodsRepository;
+        this.goodsService = goodsService;
     }
 
-    public List<CartRecord> getUsersCartRecords(User user){
-        return cartRecordRepository.findCartRecordsByUser(user);
-    }
+    public CartDTO allRecords() {
+        final Map<Long, Long> records = cartRecords.getRecords();
+        CartDTO cartDTO = new CartDTO();
+        Long sum = 0L;
+        Long ordinal = 1L;
 
-    public void addCartRecord(CartAdditionDTO cartAdditionDTO, User user, Goods goods, int ordinal){
-        cartRecordRepository.save(new CartRecord(user, goods, cartAdditionDTO.getQuantity(), ordinal));
-    }
-
-    public void deleteAllRecords(){
-        cartRecordRepository.deleteAll();
-    }
-
-    public CartRecord getRecordByUserGoods(User user, Goods goods){
-        return cartRecordRepository.findCartRecordsByUserAndGoods(user,goods);
-    }
-
-    public CartRecord getRecordByUserAndOrdinal(User user, int ordinal){
-        return cartRecordRepository.findCartRecordByUserAndOrdinal(user, ordinal);
-    }
-
-    public void deleteRecord(CartRecord cartRecord){
-        cartRecordRepository.delete(cartRecord);
-    }
-
-    public void modifyQuantity(CartRecord cartRecord, int difference){
-        cartRecord.setQuantity(cartRecord.getQuantity()+difference);
-        cartRecordRepository.save(cartRecord);
-    }
-
-    public void updateCardRecord(){
-
-    }
-
-    public Map<Object,Object> getUsersCart(List<CartRecord> cartRecords){
-        Map<Object, Object> response = new HashMap<>();
-        int sum=0;
-        for(CartRecord record : cartRecords){
-            response.put(record.getOrdinal(), new CartResponseDTO(record.getGoods().getTitle(), record.getQuantity()));
-            sum += record.getQuantity()*record.getGoods().getPrice();
+        if (records.keySet().size() == 0) {
+            cartDTO.getCart().put("Cart is empty", null);
+            return cartDTO;
         }
-        response.put("Sum", sum);
-        return response;
+
+        for (Long id : records.keySet()) {
+            if (goodsRepository.findById(id).isPresent()) {
+                Goods goods = goodsRepository.findById(id).get();
+
+                cartDTO.getCart().put(ordinal, Map.of("title", goods.getTitle(),
+                        "quantity", records.get(id)));
+                ordinal++;
+                sum += goods.getPrice() * records.get(id);
+            }
+        }
+        cartDTO.getCart().put("Sum", sum);
+        return cartDTO;
+    }
+
+    public boolean addRecord(CartAdditionDTO cartAdditionDTO) {
+        if(!goodsService.enoughQuantity(cartAdditionDTO)){
+            return false;
+        }
+        if (cartRecords.getRecords().containsKey(cartAdditionDTO.getId())) {
+            Long newQuantity = cartRecords.getRecords().get(cartAdditionDTO.getId()) + cartAdditionDTO.getQuantity();
+            if(goodsService.enoughQuantity(new CartAdditionDTO(cartAdditionDTO.getId(), newQuantity))){
+                cartRecords.getRecords().put(cartAdditionDTO.getId(), newQuantity);
+                return true;
+            }
+            return false;
+        }
+        cartRecords.getRecords().put(cartAdditionDTO.getId(), cartAdditionDTO.getQuantity());
+        return true;
+    }
+
+    public void deleteRecord(Long id){
+        cartRecords.getRecords().remove(id);
+    }
+
+    public boolean updateRecord(CartAdditionDTO cartAdditionDTO){
+        if(goodsService.enoughQuantity(cartAdditionDTO)){
+            cartRecords.getRecords().put(cartAdditionDTO.getId(), cartAdditionDTO.getQuantity());
+            return true;
+        }
+        return false;
     }
 }

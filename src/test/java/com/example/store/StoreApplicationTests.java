@@ -4,7 +4,6 @@ import com.example.store.dto.CartAdditionDTO;
 import com.example.store.dto.UserLogRegDTO;
 import com.example.store.entity.Goods;
 import com.example.store.entity.User;
-import com.example.store.service.CartRecordService;
 import com.example.store.service.GoodsService;
 import com.example.store.service.UserService;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -17,7 +16,6 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.web.context.request.RequestContextHolder;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
@@ -41,8 +39,6 @@ class StoreApplicationTests {
     @Autowired
     private GoodsService goodsService;
 
-    @Autowired
-    private CartRecordService cartRecordService;
 
 
     @BeforeAll
@@ -53,11 +49,9 @@ class StoreApplicationTests {
         userService.addUser(new User("deleteuser@mail.ru", "123"));
 
         goodsService.deleteAllGoods();
-        goodsService.addGoods(new Goods("pen", 10,25));
-        goodsService.addGoods(new Goods("charger", 32,240));
-        goodsService.addGoods(new Goods("cup", 40,50));
-
-        cartRecordService.deleteAllRecords();
+        goodsService.addGoods(new Goods("pen", 10L,25L));
+        goodsService.addGoods(new Goods("charger", 32L,240L));
+        goodsService.addGoods(new Goods("cup", 40L,50L));
     }
 
     @Test()
@@ -83,7 +77,6 @@ class StoreApplicationTests {
     @Test()
     public void testCorrectLogin() throws Exception {
         UserLogRegDTO userLogRegDTO = new UserLogRegDTO("busymail@mail.ru", "123");
-        System.out.println(RequestContextHolder.currentRequestAttributes().getSessionId());
 
         this.mockMvc.perform(post("/api/login")
                         .content(objectMapper.writeValueAsString(userLogRegDTO))
@@ -122,7 +115,7 @@ class StoreApplicationTests {
     @WithMockUser(username = "busymail@mail.ru",password = "123")
     public void testAddToCart() throws Exception {
         long chargerId = goodsService.goodsByTitle("charger").getId();
-        CartAdditionDTO cartAdditionDTO = new CartAdditionDTO(chargerId, 2);
+        CartAdditionDTO cartAdditionDTO = new CartAdditionDTO(chargerId, 2L);
 
         this.mockMvc.perform(post("/api/cart/add")
                 .content(objectMapper.writeValueAsString(cartAdditionDTO))
@@ -134,7 +127,7 @@ class StoreApplicationTests {
     @WithMockUser(username = "busymail@mail.ru",password = "123")
     public void testNotEnoughGoods() throws Exception {
         long chargerId = goodsService.goodsByTitle("charger").getId();
-        CartAdditionDTO cartAdditionDTO = new CartAdditionDTO(chargerId, 100);
+        CartAdditionDTO cartAdditionDTO = new CartAdditionDTO(chargerId, 100L);
 
         this.mockMvc.perform(post("/api/cart/add")
                         .content(objectMapper.writeValueAsString(cartAdditionDTO))
@@ -147,8 +140,8 @@ class StoreApplicationTests {
     public void testCartView() throws Exception {
         long chargerId = goodsService.goodsByTitle("cup").getId();
         long penId = goodsService.goodsByTitle("pen").getId();
-        CartAdditionDTO cartAdditionDTO = new CartAdditionDTO(chargerId, 2);
-        CartAdditionDTO cartAdditionDTO1 = new CartAdditionDTO(penId, 1);
+        CartAdditionDTO cartAdditionDTO = new CartAdditionDTO(chargerId, 2L);
+        CartAdditionDTO cartAdditionDTO1 = new CartAdditionDTO(penId, 1L);
 
         this.mockMvc.perform(post("/api/cart/add")
                         .content(objectMapper.writeValueAsString(cartAdditionDTO))
@@ -170,8 +163,8 @@ class StoreApplicationTests {
     public void deleteFromCart() throws Exception {
         long chargerId = goodsService.goodsByTitle("cup").getId();
         long penId = goodsService.goodsByTitle("pen").getId();
-        CartAdditionDTO cartAdditionDTO = new CartAdditionDTO(chargerId, 1);
-        CartAdditionDTO cartAdditionDTO1 = new CartAdditionDTO(penId, 1);
+        CartAdditionDTO cartAdditionDTO = new CartAdditionDTO(chargerId, 1L);
+        CartAdditionDTO cartAdditionDTO1 = new CartAdditionDTO(penId, 1L);
 
         this.mockMvc.perform(post("/api/cart/add")
                         .content(objectMapper.writeValueAsString(cartAdditionDTO))

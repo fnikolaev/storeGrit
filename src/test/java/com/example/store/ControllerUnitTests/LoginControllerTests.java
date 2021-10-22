@@ -48,14 +48,10 @@ public class LoginControllerTests {
         Mockito.when(userService.userExists("unit@mail.ru")).thenReturn(false);
 
         mockMvc.perform(
-                        post("/api/registration")
+                        post("/api/login")
                                 .content(objectMapper.writeValueAsString(userLogRegDTO))
                                 .contentType(MediaType.APPLICATION_JSON)
                 )
                 .andExpect(status().isOk());
-
-        verify(userService).userExists(matches("unit@mail.ru"));
-
-        verify(userService).addUser(any(User.class));
     }
 }

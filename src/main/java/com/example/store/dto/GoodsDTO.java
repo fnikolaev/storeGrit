@@ -7,8 +7,8 @@ import lombok.Data;
 public class GoodsDTO {
     private Long id;
     private String title;
-    private int available;
-    private int price;
+    private Long available;
+    private Long price;
 
     public GoodsDTO(Goods goods) {
         this.id = goods.getId();
