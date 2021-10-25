@@ -4,6 +4,7 @@ import com.example.store.dto.CartAdditionDTO;
 import com.example.store.dto.UserLogRegDTO;
 import com.example.store.entity.Goods;
 import com.example.store.entity.User;
+import com.example.store.repository.OrderRepository;
 import com.example.store.service.GoodsService;
 import com.example.store.service.UserService;
 import io.restassured.filter.session.SessionFilter;
@@ -11,7 +12,6 @@ import io.restassured.http.ContentType;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.hasKey;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -24,7 +24,7 @@ import static io.restassured.RestAssured.given;
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @AutoConfigureMockMvc
 @DirtiesContext
-public class CartTests {
+public class OrderTests {
 
     @LocalServerPort
     int port;
@@ -34,6 +34,9 @@ public class CartTests {
 
     @Autowired
     GoodsService goodsService;
+
+    @Autowired
+    OrderRepository orderRepository;
 
     @BeforeEach
     public void init(){
@@ -45,13 +48,16 @@ public class CartTests {
         goodsService.addGoods(new Goods("pen", 10L,25L));
         goodsService.addGoods(new Goods("charger", 32L,240L));
         goodsService.addGoods(new Goods("cup", 40L,50L));
+
+        orderRepository.deleteAll();
+        orderRepository.flush();
     }
 
     protected SessionFilter sessionFilterCustomerOne = new SessionFilter();
     protected SessionFilter sessionFilterCustomerTwo = new SessionFilter();
 
     @Test
-    protected void okAddToCart() {
+    protected void createOrderOk() {
         UserLogRegDTO userLogRegDTO = new UserLogRegDTO("existing1@mail.ru", "123");
         CartAdditionDTO cartAdditionDTO = new CartAdditionDTO(goodsService.goodsByTitle("charger").getId(),2L);
 
@@ -71,16 +77,24 @@ public class CartTests {
 
         given().port(port).log().all()
                 .filter(sessionFilterCustomerOne)
-                .when().get("/api/cart")
+                .when().post("/api/cart/order")
+                .then().log().all()
+                .statusCode(HttpStatus.OK.value());
+
+        given().port(port).log().all()
+                .filter(sessionFilterCustomerOne)
+                .when().get("/api/order")
                 .then().log().all()
                 .statusCode(HttpStatus.OK.value())
-                .and().body("Sum", equalTo(480));
+                .and().body("[0].status", equalTo(true),
+                        "[0].total", equalTo(480));
     }
 
     @Test
-    protected void badReqAddToCart() {
+    protected void createOrderBadRequest() {
         UserLogRegDTO userLogRegDTO = new UserLogRegDTO("existing1@mail.ru", "123");
-        CartAdditionDTO cartAdditionDTO = new CartAdditionDTO(goodsService.goodsByTitle("charger").getId(),100L);
+        CartAdditionDTO cartAdditionDTO = new CartAdditionDTO(goodsService.goodsByTitle("charger").getId(),2L);
+        CartAdditionDTO cartAdditionDTO2 = new CartAdditionDTO(goodsService.goodsByTitle("charger").getId(),32L);
 
         given().port(port).log().all()
                 .filter(sessionFilterCustomerOne)
@@ -93,12 +107,38 @@ public class CartTests {
                 .filter(sessionFilterCustomerOne)
                 .contentType(ContentType.JSON).body(cartAdditionDTO)
                 .when().post("/api/cart/add")
+                .then().log().all()
+                .statusCode(HttpStatus.OK.value());
+
+        given().port(port).log().all()
+                .filter(sessionFilterCustomerTwo)
+                .contentType(ContentType.JSON).body(userLogRegDTO)
+                .when().post("/api/login")
+                .then().log().all()
+                .statusCode(HttpStatus.OK.value());
+
+        given().port(port).log().all()
+                .filter(sessionFilterCustomerTwo)
+                .contentType(ContentType.JSON).body(cartAdditionDTO2)
+                .when().post("/api/cart/add")
+                .then().log().all()
+                .statusCode(HttpStatus.OK.value());
+
+        given().port(port).log().all()
+                .filter(sessionFilterCustomerTwo)
+                .when().post("/api/cart/order")
+                .then().log().all()
+                .statusCode(HttpStatus.OK.value());
+
+        given().port(port).log().all()
+                .filter(sessionFilterCustomerOne)
+                .when().post("/api/cart/order")
                 .then().log().all()
                 .statusCode(HttpStatus.BAD_REQUEST.value());
     }
 
     @Test
-    protected void deleteFromCart() {
+    protected void deleteOrderOk() {
         UserLogRegDTO userLogRegDTO = new UserLogRegDTO("existing1@mail.ru", "123");
         CartAdditionDTO cartAdditionDTO = new CartAdditionDTO(goodsService.goodsByTitle("charger").getId(),2L);
 
@@ -118,50 +158,30 @@ public class CartTests {
 
         given().port(port).log().all()
                 .filter(sessionFilterCustomerOne)
-                .when().delete("api/cart/delete?title=charger")
+                .when().post("/api/cart/order")
+                .then().log().all()
+                .statusCode(HttpStatus.OK.value());
+
+        Long id = orderRepository.findAllByOrderByIdDesc().get(0).getId();
+
+        given().port(port).log().all()
+                .filter(sessionFilterCustomerOne)
+                .when().delete("/api/order/delete?id=" + id)
                 .then().log().all()
                 .statusCode(HttpStatus.OK.value());
 
         given().port(port).log().all()
                 .filter(sessionFilterCustomerOne)
-                .when().get("/api/cart")
+                .when().get("/api/order")
                 .then().log().all()
                 .statusCode(HttpStatus.OK.value())
-                .and().body("$", hasKey("Cart is empty"));
-    }
-
-    @Test
-    protected void updateCart() {
-        UserLogRegDTO userLogRegDTO = new UserLogRegDTO("existing1@mail.ru", "123");
-        CartAdditionDTO cartAdditionDTO = new CartAdditionDTO(goodsService.goodsByTitle("charger").getId(),2L);
-        CartAdditionDTO updating = new CartAdditionDTO(goodsService.goodsByTitle("charger").getId(),4L);
+                .and().body("[0].status", equalTo(false));
 
         given().port(port).log().all()
                 .filter(sessionFilterCustomerOne)
-                .contentType(ContentType.JSON).body(userLogRegDTO)
-                .when().post("/api/login")
-                .then().log().all()
-                .statusCode(HttpStatus.OK.value());
-
-        given().port(port).log().all()
-                .filter(sessionFilterCustomerOne)
-                .contentType(ContentType.JSON).body(cartAdditionDTO)
-                .when().post("/api/cart/add")
-                .then().log().all()
-                .statusCode(HttpStatus.OK.value());
-
-        given().port(port).log().all()
-                .filter(sessionFilterCustomerOne)
-                .contentType(ContentType.JSON).body(updating)
-                .when().patch("api/cart/update")
-                .then().log().all()
-                .statusCode(HttpStatus.OK.value());
-
-        given().port(port).log().all()
-                .filter(sessionFilterCustomerOne)
-                .when().get("/api/cart")
+                .when().get("/api/goods")
                 .then().log().all()
                 .statusCode(HttpStatus.OK.value())
-                .and().body("1.quantity", equalTo(4));
+                .and().body("[1].available", equalTo(32));
     }
 }

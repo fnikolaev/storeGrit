@@ -26,10 +26,10 @@ public class OrderService {
         this.cartRecords = cartRecords;
     }
 
-    public void createOrder(User user){
+    public void createOrder(User user) {
         final Map<Long, Long> records = cartRecords.getRecords();
         Long sum = 0L;
-        for(Long id : records.keySet()){
+        for (Long id : records.keySet()) {
             Goods goods = goodsRepository.findById(id).get();
             sum += goods.getPrice() * records.get(id);
         }
@@ -38,18 +38,21 @@ public class OrderService {
         orderRepository.save(order);
 
         Order lastUsersOrder = orderRepository.findByUserOrderByIdDesc(user).get(0);
-        for(Long id : records.keySet()){
+        for (Long id : records.keySet()) {
             Goods goods = goodsRepository.findById(id).get();
-            OrderGoods orderGoods = new OrderGoods(goods, lastUsersOrder,records.get(id));
+            goods.setAvailable(goods.getAvailable() - records.get(id));
+            goodsRepository.save(goods);
+
+            OrderGoods orderGoods = new OrderGoods(goods, lastUsersOrder, records.get(id));
             orderGoodsRepository.save(orderGoods);
         }
     }
 
-    public List<UserOrderDTO> getOrders(User user){
+    public List<UserOrderDTO> getOrders(User user) {
         List<Order> orders = orderRepository.findByUserOrderByIdDesc(user);
         List<UserOrderDTO> userOrderDTOS = new ArrayList<>();
-        for(Order order : orders){
-            userOrderDTOS.add(new UserOrderDTO(order.getId(),order.getDate(),order.getTotal(), order.isStatus()));
+        for (Order order : orders) {
+            userOrderDTOS.add(new UserOrderDTO(order.getId(), order.getDate(), order.getTotal(), order.isStatus()));
         }
         return userOrderDTOS;
     }
@@ -57,9 +60,9 @@ public class OrderService {
     public void deleteOrder(Long id) {
         Order order = orderRepository.getById(id);
         List<OrderGoods> orderGoods = orderGoodsRepository.findByOrder(order);
-        for (OrderGoods orGoods : orderGoods){
+        for (OrderGoods orGoods : orderGoods) {
             Goods goods = orGoods.getGoods();
-            goods.setAvailable(goods.getAvailable()+orGoods.getQuantity());
+            goods.setAvailable(goods.getAvailable() + orGoods.getQuantity());
             goodsRepository.save(goods);
         }
         order.setStatus(false);

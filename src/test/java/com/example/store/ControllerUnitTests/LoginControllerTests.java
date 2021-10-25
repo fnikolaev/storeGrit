@@ -12,6 +12,10 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.MediaType;
+import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContext;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
@@ -33,6 +37,9 @@ public class LoginControllerTests {
     @Mock
     private UserService userService;
 
+    @Mock
+    private DaoAuthenticationProvider daoAuthenticationProvider;
+
     @BeforeEach
     public void setUp(){
         registrationController = new RegistrationController(userService);
@@ -42,8 +49,26 @@ public class LoginControllerTests {
     }
 
     @Test
-    public void successfulRegistration() throws Exception {
-        UserLogRegDTO userLogRegDTO = new UserLogRegDTO("unit@mail.ru", "123");
+    public void okLogin() throws Exception {
+        UserLogRegDTO userLogRegDTO = new UserLogRegDTO("existinh@mail.ru", "123");
+        Authentication authentication = Mockito.mock(Authentication.class);
+        SecurityContext securityContext = Mockito.mock(SecurityContext.class);
+
+        //Mockito.when(SecurityContextHolder.getContext().setAuthentication(authentication)).then(throw Error);
+        //Mockito.when(securityContext.getAuthentication()).thenReturn(authentication);
+
+
+        mockMvc.perform(
+                        post("/api/login")
+                                .content(objectMapper.writeValueAsString(userLogRegDTO))
+                                .contentType(MediaType.APPLICATION_JSON)
+                )
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    public void badLogin() throws Exception {
+        UserLogRegDTO userLogRegDTO = new UserLogRegDTO("notexisting@mail.ru", "123");
 
         Mockito.when(userService.userExists("unit@mail.ru")).thenReturn(false);
 

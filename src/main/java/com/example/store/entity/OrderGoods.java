@@ -25,4 +25,8 @@ public class OrderGoods implements Serializable {
         this.order = order;
         this.quantity = quantity;
     }
+
+    public OrderGoods() {
+
+    }
 }

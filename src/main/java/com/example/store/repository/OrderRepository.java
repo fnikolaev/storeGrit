@@ -10,4 +10,5 @@ import java.util.ArrayList;
 @Repository
 public interface OrderRepository extends JpaRepository<Order, Long> {
     ArrayList<Order> findByUserOrderByIdDesc(User user);
+    ArrayList<Order> findAllByOrderByIdDesc();
 }
