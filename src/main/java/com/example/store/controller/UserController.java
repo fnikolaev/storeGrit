@@ -23,7 +23,7 @@ public class UserController {
     @PostMapping("/newpassword")
     public ResponseEntity changePassword(String newPassword, Principal principal) {
         User user = userService.findByEmail(principal.getName());
-        userService.changePassword(user,)
+        userService.changePassword(user, newPassword);
 
         return ResponseEntity.ok("k");
     }

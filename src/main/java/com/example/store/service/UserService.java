@@ -34,6 +34,10 @@ public class UserService {
         return false;
     }
 
+    public void changePassword(User user, String newPassword){
+        user.setPassword(newPassword);
+    }
+
     public void deleteAllUsers(){
         userRepository.deleteAll();
     }
