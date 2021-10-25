@@ -1,4 +1,4 @@
-package com.example.store;
+package com.example.store.assure;
 
 import com.example.store.dto.CartAdditionDTO;
 import com.example.store.dto.UserLogRegDTO;
@@ -24,7 +24,7 @@ import static io.restassured.RestAssured.given;
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @AutoConfigureMockMvc
 @DirtiesContext
-public class Assure {
+public class CartTests {
 
     @LocalServerPort
     int port;
@@ -47,47 +47,8 @@ public class Assure {
         goodsService.addGoods(new Goods("cup", 40L,50L));
     }
 
-    @Test
-    public void whenCreateExistingUser_thenStatus409() {
-        UserLogRegDTO userLogRegDTO = new UserLogRegDTO("newuser@mail.ru", "123");
-
-        given().port(port).log().all()
-                .contentType(ContentType.JSON).body(userLogRegDTO)
-                .when().post("/api/registration")
-                .then().log().all()
-                .statusCode(HttpStatus.OK.value());
-
-        given().port(port).log().all()
-                .contentType(ContentType.JSON).body(userLogRegDTO)
-                .when().post("/api/registration")
-                .then().log().all()
-                .statusCode(HttpStatus.CONFLICT.value());
-    }
-
     protected SessionFilter sessionFilterCustomerOne = new SessionFilter();
     protected SessionFilter sessionFilterCustomerTwo = new SessionFilter();
-
-    @Test
-    protected void okLoginUser() {
-        UserLogRegDTO userLogRegDTO = new UserLogRegDTO("existing1@mail.ru", "123");
-        UserLogRegDTO userLogRegDTO2 = new UserLogRegDTO("existing2@mail.ru", "123");
-
-
-        given().port(port).log().all()
-                .filter(sessionFilterCustomerOne)
-                .contentType(ContentType.JSON).body(userLogRegDTO)
-                .when().post("/api/login")
-                .then().log().all()
-                .statusCode(HttpStatus.OK.value());
-
-        given().port(port).log().all()
-                .filter(sessionFilterCustomerTwo)
-                .contentType(ContentType.JSON).body(userLogRegDTO2)
-                .when().post("/api/login")
-                .then().log().all()
-                .statusCode(HttpStatus.OK.value());
-
-    }
 
     @Test
     protected void okAddToCart() {
@@ -157,7 +118,6 @@ public class Assure {
 
         given().port(port).log().all()
                 .filter(sessionFilterCustomerOne)
-                .contentType(ContentType.JSON).body(cartAdditionDTO)
                 .when().delete("api/cart/delete?title=charger")
                 .then().log().all()
                 .statusCode(HttpStatus.OK.value());
@@ -169,4 +129,39 @@ public class Assure {
                 .statusCode(HttpStatus.OK.value())
                 .and().body("$", hasKey("Cart is empty"));
     }
+
+    @Test
+    protected void updateCart() {
+        UserLogRegDTO userLogRegDTO = new UserLogRegDTO("existing1@mail.ru", "123");
+        CartAdditionDTO cartAdditionDTO = new CartAdditionDTO(goodsService.goodsByTitle("charger").getId(),2L);
+
+        given().port(port).log().all()
+                .filter(sessionFilterCustomerOne)
+                .contentType(ContentType.JSON).body(userLogRegDTO)
+                .when().post("/api/login")
+                .then().log().all()
+                .statusCode(HttpStatus.OK.value());
+
+        given().port(port).log().all()
+                .filter(sessionFilterCustomerOne)
+                .contentType(ContentType.JSON).body(cartAdditionDTO)
+                .when().post("/api/cart/add")
+                .then().log().all()
+                .statusCode(HttpStatus.OK.value());
+
+        given().port(port).log().all()
+                .filter(sessionFilterCustomerOne)
+                .contentType(ContentType.JSON).body(cartAdditionDTO)
+                .when().patch("api/cart/")
+                .then().log().all()
+                .statusCode(HttpStatus.OK.value());
+
+        given().port(port).log().all()
+                .filter(sessionFilterCustomerOne)
+                .when().get("/api/cart")
+                .then().log().all()
+                .statusCode(HttpStatus.OK.value())
+                .and().body("$", hasKey("Cart is empty"));
+    }
+
 }

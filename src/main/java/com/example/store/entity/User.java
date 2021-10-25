@@ -15,6 +15,8 @@ public class User {
     private Long id;
     private String email;
     private String password;
+    @OneToMany(mappedBy = "user")
+    private List<Order> orders;
 
     public User(UserLogRegDTO userLogRegDTO) {
         this.id = null;

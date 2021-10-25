@@ -2,9 +2,9 @@ package com.example.store.controller;
 
 import com.example.store.dto.CartAdditionDTO;
 import com.example.store.dto.CartDTO;
-import com.example.store.entity.Goods;
 import com.example.store.service.CartRecordService;
 import com.example.store.service.GoodsService;
+import com.example.store.service.OrderService;
 import com.example.store.service.UserService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -18,15 +18,16 @@ import java.util.Map;
 public class CartController {
     private final UserService userService;
     private final GoodsService goodsService;
+    private final OrderService orderService;
 
     private final CartRecordService cartRecordService;
 
-    public CartController(UserService userService, GoodsService goodsService, CartRecordService cartRecordService) {
+    public CartController(UserService userService, GoodsService goodsService, OrderService orderService, CartRecordService cartRecordService) {
         this.userService = userService;
         this.goodsService = goodsService;
+        this.orderService = orderService;
         this.cartRecordService = cartRecordService;
     }
-
 
     @GetMapping()
     public ResponseEntity<Map<Object, Object>> usersCart() {
@@ -55,6 +56,15 @@ public class CartController {
     public ResponseEntity updateCartRecord(@RequestBody CartAdditionDTO cartAdditionDTO) {
         if(cartRecordService.updateRecord(cartAdditionDTO)){
             return ResponseEntity.ok("cart updated");
+        }
+        return new ResponseEntity(null, HttpStatus.BAD_REQUEST);
+    }
+
+    @PostMapping("/order")
+    public ResponseEntity createOrder(Principal principal) {
+        if(cartRecordService.checkAvailable()){
+            orderService.createOrder(userService.findByEmail(principal.getName()));
+            return ResponseEntity.ok("order created");
         }
         return new ResponseEntity(null, HttpStatus.BAD_REQUEST);
     }

@@ -15,6 +15,8 @@ public class Goods {
     private String title;
     private Long available;
     private Long price;
+    @OneToMany(mappedBy = "goods")
+    List<OrderGoods> orderGoods;
 
 
     public Goods(String title, Long available, Long price) {

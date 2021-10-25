@@ -74,4 +74,14 @@ public class CartRecordService {
         }
         return false;
     }
+
+    public boolean checkAvailable(){
+        final Map<Long, Long> records = cartRecords.getRecords();
+        for(Long id : records.keySet()){
+            if(!goodsService.enoughQuantity(new CartAdditionDTO(id, records.get(id)))){
+                return false;
+            }
+        }
+        return true;
+    }
 }
