@@ -20,10 +20,10 @@ public class UserController {
         this.userService = userService;
     }
 
-    @PostMapping("/order")
+    @PostMapping("/newpassword")
     public ResponseEntity changePassword(String newPassword, Principal principal) {
         User user = userService.findByEmail(principal.getName());
-        //userService.changePassword(user, newPassword);
+        userService.changePassword(user,)
 
         return ResponseEntity.ok("k");
     }
