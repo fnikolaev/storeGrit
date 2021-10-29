@@ -28,14 +28,12 @@ public class UserService {
     }
 
     public boolean userExists(String email){
-        if(userRepository.findByEmail(email)!=null){
-            return true;
-        }
-        return false;
+        return userRepository.findByEmail(email) != null;
     }
 
     public void changePassword(User user, String newPassword){
-        user.setPassword(newPassword);
+        user.setPassword(passwordEncoder.encode(newPassword));
+        userRepository.save(user);
     }
 
     public void deleteAllUsers(){

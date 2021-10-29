@@ -5,8 +5,13 @@ import com.example.store.entity.*;
 import com.example.store.repository.GoodsRepository;
 import com.example.store.repository.OrderGoodsRepository;
 import com.example.store.repository.OrderRepository;
+import org.springframework.data.jpa.repository.Lock;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Isolation;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 
+import javax.persistence.LockModeType;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -17,16 +22,23 @@ public class OrderService {
     private final OrderRepository orderRepository;
     private final GoodsRepository goodsRepository;
     private final OrderGoodsRepository orderGoodsRepository;
+    private final CartRecordService cartRecordService;
     private final CartRecord cartRecords;
 
-    public OrderService(OrderRepository orderRepository, GoodsRepository goodsRepository, OrderGoodsRepository orderGoodsRepository, CartRecord cartRecords) {
+    public OrderService(OrderRepository orderRepository, GoodsRepository goodsRepository, OrderGoodsRepository orderGoodsRepository, CartRecordService cartRecordService, CartRecord cartRecords) {
         this.orderRepository = orderRepository;
         this.goodsRepository = goodsRepository;
         this.orderGoodsRepository = orderGoodsRepository;
+        this.cartRecordService = cartRecordService;
         this.cartRecords = cartRecords;
     }
 
-    public void createOrder(User user) {
+    @Transactional(isolation = Isolation.REPEATABLE_READ)
+    public boolean createOrder(User user) {
+        if (!cartRecordService.checkAvailable()) {
+            return false;
+        }
+
         final Map<Long, Long> records = cartRecords.getRecords();
         Long sum = 0L;
         for (Long id : records.keySet()) {
@@ -43,9 +55,9 @@ public class OrderService {
             goods.setAvailable(goods.getAvailable() - records.get(id));
             goodsRepository.save(goods);
 
-            OrderGoods orderGoods = new OrderGoods(goods, lastUsersOrder, records.get(id));
-            orderGoodsRepository.save(orderGoods);
+            orderGoodsRepository.save(new OrderGoods(goods, lastUsersOrder, records.get(id)));
         }
+        return true;
     }
 
     public List<UserOrderDTO> getOrders(User user) {

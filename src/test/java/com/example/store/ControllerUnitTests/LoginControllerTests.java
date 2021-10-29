@@ -2,7 +2,6 @@ package com.example.store.ControllerUnitTests;
 
 import com.example.store.controller.RegistrationController;
 import com.example.store.dto.UserLogRegDTO;
-import com.example.store.entity.User;
 import com.example.store.service.UserService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
@@ -15,13 +14,10 @@ import org.springframework.http.MediaType;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContext;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.matches;
-import static org.mockito.Mockito.verify;
+
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -54,9 +50,6 @@ public class LoginControllerTests {
         Authentication authentication = Mockito.mock(Authentication.class);
         SecurityContext securityContext = Mockito.mock(SecurityContext.class);
 
-        //Mockito.when(SecurityContextHolder.getContext().setAuthentication(authentication)).then(throw Error);
-        //Mockito.when(securityContext.getAuthentication()).thenReturn(authentication);
-
 
         mockMvc.perform(
                         post("/api/login")
@@ -70,7 +63,6 @@ public class LoginControllerTests {
     public void badLogin() throws Exception {
         UserLogRegDTO userLogRegDTO = new UserLogRegDTO("notexisting@mail.ru", "123");
 
-        Mockito.when(userService.userExists("unit@mail.ru")).thenReturn(false);
 
         mockMvc.perform(
                         post("/api/login")

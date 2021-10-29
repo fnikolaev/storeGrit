@@ -6,6 +6,9 @@ import com.example.store.entity.Goods;
 import com.example.store.repository.GoodsRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Isolation;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -49,16 +52,12 @@ public class GoodsService {
 
     public boolean enoughQuantity(CartAdditionDTO cartAdditionDTO){
         Long available = goodsRepository.getById(cartAdditionDTO.getId()).getAvailable();
-        if(available < cartAdditionDTO.getQuantity())
-            return false;
-        return true;
+        return available >= cartAdditionDTO.getQuantity();
     }
 
     public boolean enoughQuantityLong(Long goodsId, Long quantity){
         Long available = goodsRepository.getById(goodsId).getAvailable();
-        if(available < quantity)
-            return false;
-        return true;
+        return available >= quantity;
     }
 
     public void decreaseAvailable(CartAdditionDTO cartAdditionDTO){

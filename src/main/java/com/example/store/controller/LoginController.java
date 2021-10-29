@@ -15,12 +15,12 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.context.request.RequestContextHolder;
 
+import javax.validation.Valid;
 import java.util.HashMap;
 import java.util.Map;
 
 
 @RestController
-@Scope(value = "session")
 @RequestMapping(value = "/api/")
 public class LoginController {
     private final DaoAuthenticationProvider daoAuthenticationProvider;
@@ -31,14 +31,14 @@ public class LoginController {
     }
 
     @PostMapping("login")
-    public ResponseEntity login(@RequestBody UserLogRegDTO userLogRegDTO) {
+    public ResponseEntity login(@Valid @RequestBody UserLogRegDTO userLogRegDTO) {
         try{
             final Authentication authenticate = daoAuthenticationProvider.authenticate(new UsernamePasswordAuthenticationToken(userLogRegDTO.getEmail(),
                     userLogRegDTO.getPassword()));
             SecurityContextHolder.getContext().setAuthentication(authenticate);
         }
         catch(Exception e){
-            return new ResponseEntity(null, HttpStatus.BAD_REQUEST);
+            return new ResponseEntity("Email or password are incorrect", HttpStatus.BAD_REQUEST);
         }
 
         Map<String ,Object> response = new HashMap<>();

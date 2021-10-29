@@ -6,6 +6,9 @@ import com.example.store.entity.CartRecord;
 import com.example.store.entity.Goods;
 import com.example.store.repository.GoodsRepository;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Isolation;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Map;
 

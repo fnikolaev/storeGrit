@@ -62,8 +62,7 @@ public class CartController {
 
     @PostMapping("/order")
     public ResponseEntity createOrder(Principal principal) {
-        if(cartRecordService.checkAvailable()){
-            orderService.createOrder(userService.findByEmail(principal.getName()));
+        if(orderService.createOrder(userService.findByEmail(principal.getName()))){
             return ResponseEntity.ok("order created");
         }
         return new ResponseEntity(null, HttpStatus.BAD_REQUEST);

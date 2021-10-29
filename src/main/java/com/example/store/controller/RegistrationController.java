@@ -11,6 +11,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import javax.validation.Valid;
+
 
 @RestController
 @RequestMapping(value = "/api/")
@@ -24,7 +26,7 @@ public class RegistrationController {
     }
 
     @PostMapping("registration")
-    public ResponseEntity registration(@RequestBody UserLogRegDTO userLogRegDTO) {
+    public ResponseEntity registration(@Valid @RequestBody UserLogRegDTO userLogRegDTO) {
         if (userService.userExists(userLogRegDTO.getEmail())){
             return new ResponseEntity(null, HttpStatus.CONFLICT);
         }

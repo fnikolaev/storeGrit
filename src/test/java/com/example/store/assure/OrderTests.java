@@ -50,7 +50,6 @@ public class OrderTests {
         goodsService.addGoods(new Goods("cup", 40L,50L));
 
         orderRepository.deleteAll();
-        orderRepository.flush();
     }
 
     protected SessionFilter sessionFilterCustomerOne = new SessionFilter();

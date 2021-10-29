@@ -28,4 +28,11 @@ public class Goods {
 
     public Goods() {
     }
+
+    public Goods(Long id, String title, Long available, Long price) {
+        this.id = id;
+        this.title = title;
+        this.available = available;
+        this.price = price;
+    }
 }
