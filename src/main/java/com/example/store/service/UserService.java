@@ -31,11 +31,6 @@ public class UserService {
         return userRepository.findByEmail(email) != null;
     }
 
-    public void changePassword(User user, String newPassword){
-        user.setPassword(passwordEncoder.encode(newPassword));
-        userRepository.save(user);
-    }
-
     public void deleteAllUsers(){
         userRepository.deleteAll();
     }

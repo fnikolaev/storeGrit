@@ -26,16 +26,14 @@ public class RegistrationControllerTests {
 
     private MockMvc mockMvc;
 
-    private ObjectMapper objectMapper = new ObjectMapper();
-
-    private RegistrationController registrationController;
+    private final ObjectMapper objectMapper = new ObjectMapper();
 
     @Mock
     private UserService userService;
 
     @BeforeEach
     public void setUp(){
-        registrationController = new RegistrationController(userService);
+        RegistrationController registrationController = new RegistrationController(userService);
         mockMvc = MockMvcBuilders
                 .standaloneSetup(registrationController)
                 .build();
@@ -53,8 +51,6 @@ public class RegistrationControllerTests {
                                 .contentType(MediaType.APPLICATION_JSON)
                 )
                 .andExpect(status().isOk());
-
-        verify(userService).userExists(matches("unit@mail.ru"));
 
         verify(userService).addUser(any(User.class));
     }

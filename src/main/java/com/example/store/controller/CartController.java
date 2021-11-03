@@ -8,12 +8,16 @@ import com.example.store.service.OrderService;
 import com.example.store.service.UserService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
+import javax.validation.Valid;
+import javax.validation.constraints.NotBlank;
 import java.security.Principal;
 import java.util.Map;
 
 @RestController
+@Validated
 @RequestMapping(value = "/api/cart")
 public class CartController {
     private final UserService userService;
@@ -38,7 +42,7 @@ public class CartController {
     }
 
     @PostMapping("/add")
-    public ResponseEntity<String> addToCart(@RequestBody CartAdditionDTO cartAdditionDTO) {
+    public ResponseEntity<String> addToCart(@Valid @RequestBody CartAdditionDTO cartAdditionDTO) {
 
         if (cartRecordService.addRecord(cartAdditionDTO)) {
             return ResponseEntity.ok("goods added to cart");
@@ -53,7 +57,7 @@ public class CartController {
     }
 
     @PatchMapping("/update")
-    public ResponseEntity updateCartRecord(@RequestBody CartAdditionDTO cartAdditionDTO) {
+    public ResponseEntity updateCartRecord(@Valid @RequestBody CartAdditionDTO cartAdditionDTO) {
         if(cartRecordService.updateRecord(cartAdditionDTO)){
             return ResponseEntity.ok("cart updated");
         }

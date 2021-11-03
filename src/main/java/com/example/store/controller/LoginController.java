@@ -2,7 +2,6 @@ package com.example.store.controller;
 
 import com.example.store.dto.UserLogRegDTO;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Scope;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;

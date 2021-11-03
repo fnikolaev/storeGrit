@@ -16,11 +16,6 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.matches;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.verify;
-
 
 @ExtendWith(MockitoExtension.class)
 public class UserServiceTests {
@@ -46,8 +41,6 @@ public class UserServiceTests {
 
     @Test
     public void userNotExists() throws Exception {
-        UserLogRegDTO userLogRegDTO = new UserLogRegDTO("unit@mail.ru", "123");
-
         Mockito.when(userRepository.findByEmail("unit@mail.ru")).thenReturn(null);
 
         Assert.assertEquals(false, userService.userExists("unit@mail.ru"));
@@ -60,8 +53,6 @@ public class UserServiceTests {
         Mockito.when(userRepository.findByEmail("unit@mail.ru")).thenReturn(new User(userLogRegDTO));
 
         Assert.assertEquals(true, userService.userExists("unit@mail.ru"));
-
-        //verify(userRepository).findByEmail("unit@mail.ru");
     }
 
     @Test
