@@ -21,6 +21,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.web.server.LocalServerPort;
 import org.springframework.http.HttpStatus;
 import org.springframework.test.annotation.DirtiesContext;
+import org.springframework.test.context.TestPropertySource;
 
 
 import java.util.ArrayList;
@@ -36,6 +37,7 @@ import static io.restassured.RestAssured.given;
 @DirtiesContext
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 @Execution(ExecutionMode.CONCURRENT)
+@TestPropertySource("/application-test.properties")
 public class JointReqTest {
 
     @LocalServerPort

@@ -5,6 +5,7 @@ import com.example.store.entity.*;
 import com.example.store.repository.GoodsRepository;
 import com.example.store.repository.OrderGoodsRepository;
 import com.example.store.repository.OrderRepository;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.jpa.repository.Lock;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Isolation;
@@ -18,6 +19,7 @@ import java.util.List;
 import java.util.Map;
 
 @Service
+@Slf4j
 public class OrderService {
     private final OrderRepository orderRepository;
     private final GoodsRepository goodsRepository;
@@ -33,9 +35,19 @@ public class OrderService {
         this.cartRecords = cartRecords;
     }
 
-    @Transactional(isolation = Isolation.REPEATABLE_READ)
+    @Transactional(propagation = Propagation.REQUIRES_NEW, isolation = Isolation.REPEATABLE_READ)
     public boolean createOrder(User user) {
         if (!cartRecordService.checkAvailable()) {
+            return false;
+        }
+
+        log.error("*********************************************8888888**********************************************");
+
+//        if (goodsRepository.findById(2L).get().getAvailable() < 32) {
+//            return false;
+//        }
+
+        if (goodsRepository.getById(2L).getAvailable() < 32) {
             return false;
         }
 
