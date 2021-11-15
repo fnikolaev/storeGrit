@@ -3,6 +3,9 @@ package com.example.store.dto;
 import com.example.store.entity.Goods;
 import lombok.Data;
 
+/**
+ * Describes goods in store.
+ */
 @Data
 public class GoodsDTO {
     private Long id;

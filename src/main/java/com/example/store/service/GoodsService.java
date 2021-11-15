@@ -10,6 +10,9 @@ import org.springframework.stereotype.Service;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ *  Contains methods for managing goods in store.
+ */
 @Service
 public class GoodsService {
     private final GoodsRepository goodsRepository;
@@ -27,6 +30,12 @@ public class GoodsService {
         return goodsRepository.findAll();
     }
 
+    /**
+     * Wraps goods List in DTO List.
+     *
+     * @param goodsList All goods from store.
+     * @return List of goods in certain DTO.
+     */
     public List<GoodsDTO> responseGoodsList(List<Goods> goodsList){
         List<GoodsDTO> goodsDTOS = new ArrayList<>();
         for(Goods goods : goodsList){
@@ -43,8 +52,14 @@ public class GoodsService {
         goodsRepository.save(goods);
     }
 
+    /**
+     * Checks if it is enough certain goods in store.
+     *
+     * @param cartAdditionDTO DTO trying to update goods quantity in cart.
+     * @return <code>true</code> if quantity completely changed, <code>false</code> otherwise.
+     */
     public boolean enoughQuantity(CartAdditionDTO cartAdditionDTO){
-        Long available = goodsRepository.getById(cartAdditionDTO.getId()).getAvailable();
+        Long available = goodsRepository.findById(cartAdditionDTO.getId()).get().getAvailable();
         return available >= cartAdditionDTO.getQuantity();
     }
 }

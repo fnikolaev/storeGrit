@@ -13,7 +13,9 @@ import org.springframework.web.bind.annotation.RestController;
 
 import javax.validation.Valid;
 
-
+/**
+ * Defines url and method for registration process.
+ */
 @RestController
 @RequestMapping(value = "/api/")
 public class RegistrationController {
@@ -25,6 +27,12 @@ public class RegistrationController {
         this.userService = userService;
     }
 
+    /**
+     * Tries to register user. HttpStatus is conflict if user with said email already exists.
+     *
+     * @param userLogRegDTO DTO containing user's email and password.
+     * @return {@link org.springframework.http.HttpEntity} + {@link HttpStatus}.
+     */
     @PostMapping("registration")
     public ResponseEntity registration(@Valid @RequestBody UserLogRegDTO userLogRegDTO) {
         if (userService.userExists(userLogRegDTO.getEmail())){

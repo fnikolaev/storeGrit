@@ -6,18 +6,18 @@ import com.example.store.entity.CartRecord;
 import com.example.store.entity.Goods;
 import com.example.store.repository.GoodsRepository;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Isolation;
-import org.springframework.transaction.annotation.Propagation;
-import org.springframework.transaction.annotation.Transactional;
+
 
 import java.util.Map;
 
+/**
+ *  Contains methods for managing user's session cart.
+ */
 @Service
 public class CartRecordService {
     private final CartRecord cartRecords;
     private final GoodsRepository goodsRepository;
     private final GoodsService goodsService;
-
 
     public CartRecordService(CartRecord cartRecord, GoodsRepository goodsRepository, GoodsService goodsService) {
         this.cartRecords = cartRecord;
@@ -25,6 +25,10 @@ public class CartRecordService {
         this.goodsService = goodsService;
     }
 
+    /**
+     *
+     * @return All goods from cart + total sum.
+     */
     public CartDTO allRecords() {
         final Map<Long, Long> records = cartRecords.getRecords();
         CartDTO cartDTO = new CartDTO();
@@ -50,6 +54,12 @@ public class CartRecordService {
         return cartDTO;
     }
 
+    /**
+     * If there is enough goods in store, then changes quantity in cart.
+     *
+     * @param cartAdditionDTO DTO for changing quantity in cart by id.
+     * @return <code>true</code> if quantity completely changed, <code>false</code> otherwise.
+     */
     public boolean addRecord(CartAdditionDTO cartAdditionDTO) {
         if(!goodsService.enoughQuantity(cartAdditionDTO)){
             return false;
@@ -66,10 +76,20 @@ public class CartRecordService {
         return true;
     }
 
+    /**
+     * Delete record from cart.
+     *
+     * @param id Id of cart record.
+     */
     public void deleteRecord(Long id){
         cartRecords.getRecords().remove(id);
     }
 
+    /**
+     *
+     * @param cartAdditionDTO Provides new quantity for cart record.
+     * @return <code>true</code> if enough quantity for updating, <code>false</code> otherwise.
+     */
     public boolean updateRecord(CartAdditionDTO cartAdditionDTO){
         if(goodsService.enoughQuantity(cartAdditionDTO)){
             cartRecords.getRecords().put(cartAdditionDTO.getId(), cartAdditionDTO.getQuantity());
@@ -78,6 +98,11 @@ public class CartRecordService {
         return false;
     }
 
+    /**
+     * Checks if there is enough goods in store.
+     *
+     * @return <code>true</code> if enough quantity, <code>false</code> otherwise.
+     */
     public boolean checkAvailable(){
         final Map<Long, Long> records = cartRecords.getRecords();
         for(Long id : records.keySet()){

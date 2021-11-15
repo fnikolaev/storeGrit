@@ -4,6 +4,9 @@ import lombok.Data;
 
 import java.util.Date;
 
+/**
+ * Describes orders.
+ */
 @Data
 public class UserOrderDTO {
     private Long id;

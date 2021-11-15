@@ -18,7 +18,9 @@ import javax.validation.Valid;
 import java.util.HashMap;
 import java.util.Map;
 
-
+/**
+ * Defines url and method for login process.
+ */
 @RestController
 @RequestMapping(value = "/api/")
 public class LoginController {
@@ -29,11 +31,17 @@ public class LoginController {
         this.daoAuthenticationProvider = daoAuthenticationProvider;
     }
 
+    /**
+     * Tries to authenticate user.
+     *
+     * @param userLogRegDTO DTO containing user's email and password.
+     * @return {@link org.springframework.http.HttpEntity} + {@link HttpStatus}.
+     */
     @PostMapping("login")
     public ResponseEntity login(@Valid @RequestBody UserLogRegDTO userLogRegDTO) {
         try{
-            final Authentication authenticate = daoAuthenticationProvider.authenticate(new UsernamePasswordAuthenticationToken(userLogRegDTO.getEmail(),
-                    userLogRegDTO.getPassword()));
+            final Authentication authenticate = daoAuthenticationProvider.authenticate(
+                    new UsernamePasswordAuthenticationToken(userLogRegDTO.getEmail(), userLogRegDTO.getPassword()));
             SecurityContextHolder.getContext().setAuthentication(authenticate);
         }
         catch(Exception e){

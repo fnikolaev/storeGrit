@@ -5,6 +5,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
+/**
+ * Contains methods for user's managing.
+ */
 @Service
 public class UserService {
     private final UserRepository userRepository;
@@ -17,7 +20,11 @@ public class UserService {
         this.passwordEncoder = passwordEncoder;
     }
 
-
+    /**
+     * Encodes password and saves in DB.
+     *
+     * @param user New user from registration controller.
+     */
     public void addUser(User user){
         user.setPassword(passwordEncoder.encode(user.getPassword()));
         userRepository.save(user);
@@ -27,6 +34,12 @@ public class UserService {
         return userRepository.findByEmail(email);
     }
 
+    /**
+     * Сhecks if the given email has been registered before.
+     *
+     * @param email New user's email.
+     * @return <code>true</code> if exists, <code>false</code> otherwise.
+     */
     public boolean userExists(String email){
         return userRepository.findByEmail(email) != null;
     }

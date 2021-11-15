@@ -7,6 +7,9 @@ import lombok.NoArgsConstructor;
 import javax.validation.constraints.Email;
 import javax.validation.constraints.NotBlank;
 
+/**
+ * Uses for registration and login.
+ */
 @Data
 @NoArgsConstructor
 @AllArgsConstructor

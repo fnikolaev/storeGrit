@@ -12,10 +12,12 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
-import javax.validation.constraints.NotBlank;
 import java.security.Principal;
 import java.util.Map;
 
+/**
+ * Defines urls and methods for login process.
+ */
 @RestController
 @Validated
 @RequestMapping(value = "/api/cart")
@@ -26,21 +28,31 @@ public class CartController {
 
     private final CartRecordService cartRecordService;
 
-    public CartController(UserService userService, GoodsService goodsService, OrderService orderService, CartRecordService cartRecordService) {
+    public CartController(UserService userService, GoodsService goodsService, OrderService orderService,
+                          CartRecordService cartRecordService) {
         this.userService = userService;
         this.goodsService = goodsService;
         this.orderService = orderService;
         this.cartRecordService = cartRecordService;
     }
 
+    /**
+     * Finds goods which in user's cart at current session
+     *
+     * @return All goods in user's cart + total sum.
+     */
     @GetMapping()
     public ResponseEntity<Map<Object, Object>> usersCart() {
-
         CartDTO response = cartRecordService.allRecords();
-
         return ResponseEntity.ok(response.getCart());
     }
 
+    /***
+     * Adds goods to user's cart
+     *
+     * @param cartAdditionDTO DTO containing id of goods and quantity.
+     * @return
+     */
     @PostMapping("/add")
     public ResponseEntity<String> addToCart(@Valid @RequestBody CartAdditionDTO cartAdditionDTO) {
 
@@ -50,12 +62,24 @@ public class CartController {
         return new ResponseEntity(null, HttpStatus.BAD_REQUEST);
     }
 
+    /**
+     * Delete goods from user's cart.
+     *
+     * @param title Title of goods.
+     * @return {@link org.springframework.http.HttpEntity} + {@link HttpStatus}.
+     */
     @DeleteMapping("/delete")
     public ResponseEntity deleteCartRecord(String title) {
         cartRecordService.deleteRecord(goodsService.goodsByTitle(title).getId());
         return ResponseEntity.ok("deleted from cart");
     }
 
+    /**
+     * Changes goods quantity in user's cart.
+     *
+     * @param cartAdditionDTO DTO containing id of goods and quantity.
+     * @return {@link org.springframework.http.HttpEntity} + {@link HttpStatus}.
+     */
     @PatchMapping("/update")
     public ResponseEntity updateCartRecord(@Valid @RequestBody CartAdditionDTO cartAdditionDTO) {
         if(cartRecordService.updateRecord(cartAdditionDTO)){
@@ -64,6 +88,12 @@ public class CartController {
         return new ResponseEntity(null, HttpStatus.BAD_REQUEST);
     }
 
+    /**
+     * Makes checkout.
+     *
+     * @param principal Current user.
+     * @return {@link org.springframework.http.HttpEntity} + {@link HttpStatus}.
+     */
     @PostMapping("/order")
     public ResponseEntity createOrder(Principal principal) {
         if(orderService.createOrder(userService.findByEmail(principal.getName()))){

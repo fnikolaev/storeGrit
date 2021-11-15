@@ -52,6 +52,7 @@ public class JointReqTest {
 
     @BeforeAll
     public void init(){
+        orderRepository.deleteAll();
         userService.deleteAllUsers();
         userService.addUser(new User("existing1@mail.ru", "123"));
         userService.addUser(new User("existing2@mail.ru", "123"));
@@ -60,15 +61,13 @@ public class JointReqTest {
         goodsService.addGoods(new Goods("pen", 10L,25L));
         goodsService.addGoods(new Goods("charger", 32L,240L));
         goodsService.addGoods(new Goods("cup", 40L,50L));
-
-        orderRepository.deleteAll();
     }
 
     protected SessionFilter sessionFilterCustomerOne = new SessionFilter();
     protected SessionFilter sessionFilterCustomerTwo = new SessionFilter();
 
 
-   // @Test
+   //@Test
     public void temp() throws ExecutionException, InterruptedException {
 
         final ExecutorService service = Executors.newFixedThreadPool(2);
@@ -112,11 +111,11 @@ public class JointReqTest {
                     .then().log().all()
                     .statusCode(HttpStatus.OK.value());
 
-            given().port(port).log().all()
+/*            given().port(port).log().all()
                     .filter(sessionFilterCustomerOne)
                     .when().get("/api/goods")
                     .then().log().all()
-                    .statusCode(HttpStatus.OK.value());
+                    .statusCode(HttpStatus.OK.value());*/
             return null;
         }
     }
@@ -126,6 +125,7 @@ public class JointReqTest {
         CartAdditionDTO cartAdditionDTO = new CartAdditionDTO(goodsService.goodsByTitle("charger").getId(),32L);
         @Override
         public Object call() throws Exception {
+            System.out.println(2);
             given().port(port).log().all()
                     .filter(sessionFilterCustomerTwo)
                     .contentType(ContentType.JSON).body(userLogRegDTO2)
@@ -146,12 +146,11 @@ public class JointReqTest {
                     .then().log().all()
                     .statusCode(HttpStatus.OK.value());
 
-            System.out.println(2);
-            given().port(port).log().all()
+/*            given().port(port).log().all()
                     .filter(sessionFilterCustomerTwo)
                     .when().get("/api/goods")
                     .then().log().all()
-                    .statusCode(HttpStatus.OK.value());
+                    .statusCode(HttpStatus.OK.value());*/
             return null;
         }
     }

@@ -8,6 +8,9 @@ import lombok.Setter;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * DTO for all goods in cart + total sum.
+ */
 @AllArgsConstructor
 @NoArgsConstructor
 public class CartDTO {
