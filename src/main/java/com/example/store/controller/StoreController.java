@@ -1,5 +1,6 @@
 package com.example.store.controller;
 
+import com.example.store.dto.GoodsDTO;
 import com.example.store.entity.Goods;
 import com.example.store.service.GoodsService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,7 +29,7 @@ public class StoreController {
      * @return {@link org.springframework.http.HttpEntity} + {@link HttpStatus}.
      */
     @GetMapping("goods")
-    public ResponseEntity allGoods() {
+    public ResponseEntity<List<GoodsDTO>> allGoods() {
         List<Goods> goods = goodsService.getAllStoresGoods();
         return ResponseEntity.ok(goodsService.responseGoodsList(goods));
     }

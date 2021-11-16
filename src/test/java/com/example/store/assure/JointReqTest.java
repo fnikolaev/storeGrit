@@ -4,6 +4,7 @@ import com.example.store.dto.CartAdditionDTO;
 import com.example.store.dto.UserLogRegDTO;
 import com.example.store.entity.Goods;
 import com.example.store.entity.User;
+import com.example.store.repository.OrderGoodsRepository;
 import com.example.store.repository.OrderRepository;
 import com.example.store.service.GoodsService;
 import com.example.store.service.UserService;
@@ -50,8 +51,12 @@ public class JointReqTest {
     @Autowired
     OrderRepository orderRepository;
 
+    @Autowired
+    OrderGoodsRepository orderGoodsRepository;
+
     @BeforeAll
     public void init(){
+        orderGoodsRepository.deleteAll();
         orderRepository.deleteAll();
         userService.deleteAllUsers();
         userService.addUser(new User("existing1@mail.ru", "123"));

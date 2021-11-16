@@ -2,7 +2,6 @@ package com.example.store.assure;
 
 import com.example.store.dto.CartAdditionDTO;
 import com.example.store.dto.UserLogRegDTO;
-import com.example.store.entity.Goods;
 import com.example.store.entity.User;
 import com.example.store.service.GoodsService;
 import com.example.store.service.UserService;
@@ -10,8 +9,6 @@ import io.restassured.filter.session.SessionFilter;
 import io.restassured.http.ContentType;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.hasKey;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -20,11 +17,12 @@ import org.springframework.http.HttpStatus;
 import org.springframework.test.annotation.DirtiesContext;
 
 import static io.restassured.RestAssured.given;
+import static org.hamcrest.Matchers.equalTo;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @AutoConfigureMockMvc
 @DirtiesContext
-public class RegLogTests {
+public class ValidationTests {
 
     @LocalServerPort
     int port;
@@ -43,51 +41,53 @@ public class RegLogTests {
     }
 
     protected SessionFilter sessionFilterCustomerOne = new SessionFilter();
-    protected SessionFilter sessionFilterCustomerTwo = new SessionFilter();
 
     @Test
-    public void regWithExistingUser() {
-        UserLogRegDTO userLogRegDTO = new UserLogRegDTO("newuser@mail.ru", "123");
+    public void emailValidationBlankEmail() {
+        UserLogRegDTO userLogRegDTO = new UserLogRegDTO("", "123");
 
         given().port(port).log().all()
                 .contentType(ContentType.JSON).body(userLogRegDTO)
                 .when().post("/api/registration")
                 .then().log().all()
-                .statusCode(HttpStatus.OK.value());
+                .statusCode(HttpStatus.BAD_REQUEST.value())
+                .and()
+                .body("message", equalTo("Check your request body"),
+                        "errors[0]", equalTo("email must not be blank"));
+    }
+
+    @Test
+    public void emailValidationBlankPassword() {
+        UserLogRegDTO userLogRegDTO = new UserLogRegDTO("my@bk.ru", "");
 
         given().port(port).log().all()
                 .contentType(ContentType.JSON).body(userLogRegDTO)
                 .when().post("/api/registration")
                 .then().log().all()
-                .statusCode(HttpStatus.CONFLICT.value());
+                .statusCode(HttpStatus.BAD_REQUEST.value())
+                .and()
+                .body("message", equalTo("Check your request body"),
+                        "errors[0]", equalTo("password must not be blank"));
     }
 
     @Test
-    protected void okLoginUser() {
-        UserLogRegDTO userLogRegDTO = new UserLogRegDTO("existing1@mail.ru", "123");
-        UserLogRegDTO userLogRegDTO2 = new UserLogRegDTO("existing2@mail.ru", "123");
-
+    public void emailValidationEmail() {
+        UserLogRegDTO userLogRegDTO = new UserLogRegDTO("@mail.ru", "123");
 
         given().port(port).log().all()
-                .filter(sessionFilterCustomerOne)
                 .contentType(ContentType.JSON).body(userLogRegDTO)
-                .when().post("/api/login")
+                .when().post("/api/registration")
                 .then().log().all()
-                .statusCode(HttpStatus.OK.value());
-
-        given().port(port).log().all()
-                .filter(sessionFilterCustomerTwo)
-                .contentType(ContentType.JSON).body(userLogRegDTO2)
-                .when().post("/api/login")
-                .then().log().all()
-                .statusCode(HttpStatus.OK.value());
-
+                .statusCode(HttpStatus.BAD_REQUEST.value())
+                .and()
+                .body("message", equalTo("Check your request body"),
+                        "errors[0]", equalTo("email must be a well-formed email address"));
     }
 
     @Test
-    protected void okAddToCart() {
+    protected void lowQuantity() {
         UserLogRegDTO userLogRegDTO = new UserLogRegDTO("existing1@mail.ru", "123");
-        CartAdditionDTO cartAdditionDTO = new CartAdditionDTO(goodsService.goodsByTitle("charger").getId(),2L);
+        CartAdditionDTO cartAdditionDTO = new CartAdditionDTO(goodsService.goodsByTitle("charger").getId(),0L);
 
         given().port(port).log().all()
                 .filter(sessionFilterCustomerOne)
@@ -101,33 +101,9 @@ public class RegLogTests {
                 .contentType(ContentType.JSON).body(cartAdditionDTO)
                 .when().post("/api/cart/add")
                 .then().log().all()
-                .statusCode(HttpStatus.OK.value());
-
-        given().port(port).log().all()
-                .filter(sessionFilterCustomerOne)
-                .when().get("/api/cart")
-                .then().log().all()
-                .statusCode(HttpStatus.OK.value())
-                .and().body("Sum", equalTo(480));
-    }
-
-    @Test
-    protected void badReqAddToCart() {
-        UserLogRegDTO userLogRegDTO = new UserLogRegDTO("existing1@mail.ru", "123");
-        CartAdditionDTO cartAdditionDTO = new CartAdditionDTO(goodsService.goodsByTitle("charger").getId(),100L);
-
-        given().port(port).log().all()
-                .filter(sessionFilterCustomerOne)
-                .contentType(ContentType.JSON).body(userLogRegDTO)
-                .when().post("/api/login")
-                .then().log().all()
-                .statusCode(HttpStatus.OK.value());
-
-        given().port(port).log().all()
-                .filter(sessionFilterCustomerOne)
-                .contentType(ContentType.JSON).body(cartAdditionDTO)
-                .when().post("/api/cart/add")
-                .then().log().all()
-                .statusCode(HttpStatus.BAD_REQUEST.value());
+                .statusCode(HttpStatus.BAD_REQUEST.value())
+                .and()
+                .body("message", equalTo("Check your request body"),
+                        "errors[0]", equalTo("quantity must be greater than or equal to 1"));
     }
 }

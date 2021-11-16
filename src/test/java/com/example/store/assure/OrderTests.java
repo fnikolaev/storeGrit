@@ -4,6 +4,7 @@ import com.example.store.dto.CartAdditionDTO;
 import com.example.store.dto.UserLogRegDTO;
 import com.example.store.entity.Goods;
 import com.example.store.entity.User;
+import com.example.store.repository.OrderGoodsRepository;
 import com.example.store.repository.OrderRepository;
 import com.example.store.service.GoodsService;
 import com.example.store.service.UserService;
@@ -38,8 +39,13 @@ public class OrderTests {
     @Autowired
     OrderRepository orderRepository;
 
+    @Autowired
+    OrderGoodsRepository orderGoodsRepository;
+
     @BeforeEach
     public void init(){
+        orderGoodsRepository.deleteAll();
+        orderRepository.deleteAll();
         userService.deleteAllUsers();
         userService.addUser(new User("existing1@mail.ru", "123"));
         userService.addUser(new User("existing2@mail.ru", "123"));
@@ -48,8 +54,6 @@ public class OrderTests {
         goodsService.addGoods(new Goods("pen", 10L,25L));
         goodsService.addGoods(new Goods("charger", 32L,240L));
         goodsService.addGoods(new Goods("cup", 40L,50L));
-
-        orderRepository.deleteAll();
     }
 
     protected SessionFilter sessionFilterCustomerOne = new SessionFilter();
@@ -85,7 +89,8 @@ public class OrderTests {
                 .when().get("/api/order")
                 .then().log().all()
                 .statusCode(HttpStatus.OK.value())
-                .and().body("[0].status", equalTo(true),
+                .and()
+                .body("[0].status", equalTo(true),
                         "[0].total", equalTo(480));
     }
 

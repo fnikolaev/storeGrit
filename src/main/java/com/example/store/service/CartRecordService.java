@@ -5,6 +5,8 @@ import com.example.store.dto.CartDTO;
 import com.example.store.entity.CartRecord;
 import com.example.store.entity.Goods;
 import com.example.store.repository.GoodsRepository;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 
@@ -90,12 +92,12 @@ public class CartRecordService {
      * @param cartAdditionDTO Provides new quantity for cart record.
      * @return <code>true</code> if enough quantity for updating, <code>false</code> otherwise.
      */
-    public boolean updateRecord(CartAdditionDTO cartAdditionDTO){
+    public ResponseEntity<String> updateRecord(CartAdditionDTO cartAdditionDTO){
         if(goodsService.enoughQuantity(cartAdditionDTO)){
             cartRecords.getRecords().put(cartAdditionDTO.getId(), cartAdditionDTO.getQuantity());
-            return true;
+            return ResponseEntity.ok("Cart updated");
         }
-        return false;
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Not enough quantity in store");
     }
 
     /**

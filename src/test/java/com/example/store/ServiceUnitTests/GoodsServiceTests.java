@@ -15,6 +15,10 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
+import java.util.Optional;
+
+import static org.mockito.ArgumentMatchers.any;
+
 @ExtendWith(MockitoExtension.class)
 public class GoodsServiceTests {
     private MockMvc mockMvc;
@@ -40,7 +44,7 @@ public class GoodsServiceTests {
         CartAdditionDTO cartAdditionDTO = new CartAdditionDTO(1L, 15L);
         Goods goods = new Goods(1L,"charger",18L,240L);
 
-        Mockito.when(goodsRepository.findById(cartAdditionDTO.getId()).get()).thenReturn(goods);
+        Mockito.when(goodsRepository.findById(cartAdditionDTO.getId())).thenReturn(Optional.of(goods));
 
         Assert.assertEquals(true, goodsService.enoughQuantity(cartAdditionDTO));
     }
@@ -50,11 +54,8 @@ public class GoodsServiceTests {
         CartAdditionDTO cartAdditionDTO = new CartAdditionDTO(1L, 20L);
         Goods goods = new Goods(1L,"charger",18L,240L);
 
-        Mockito.when(goodsRepository.findById(cartAdditionDTO.getId()).get()).thenReturn(goods);
+        Mockito.when(goodsRepository.findById(cartAdditionDTO.getId())).thenReturn(Optional.of(goods));
 
         Assert.assertEquals(false, goodsService.enoughQuantity(cartAdditionDTO));
     }
-
-
-
 }

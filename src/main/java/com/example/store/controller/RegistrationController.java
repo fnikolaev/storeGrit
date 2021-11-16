@@ -34,11 +34,7 @@ public class RegistrationController {
      * @return {@link org.springframework.http.HttpEntity} + {@link HttpStatus}.
      */
     @PostMapping("registration")
-    public ResponseEntity registration(@Valid @RequestBody UserLogRegDTO userLogRegDTO) {
-        if (userService.userExists(userLogRegDTO.getEmail())){
-            return new ResponseEntity(null, HttpStatus.CONFLICT);
-        }
-        userService.addUser(new User(userLogRegDTO));
-        return ResponseEntity.ok("added");
+    public ResponseEntity<String> registration(@Valid @RequestBody UserLogRegDTO userLogRegDTO) {
+        return userService.registerUser(userLogRegDTO);
     }
 }

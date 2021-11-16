@@ -6,15 +6,24 @@ import com.example.store.repository.UserRepository;
 import com.example.store.service.UserService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.Assert;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
+
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
 
 
 @ExtendWith(MockitoExtension.class)
@@ -31,36 +40,60 @@ public class UserServiceTests {
     @Mock
     private BCryptPasswordEncoder bCryptPasswordEncoder;
 
+    @Mock
+    private DaoAuthenticationProvider daoAuthenticationProvider;
+
     @BeforeEach
     public void setUp(){
-        userService = new UserService(userRepository, bCryptPasswordEncoder);
+        userService = new UserService(userRepository, bCryptPasswordEncoder, daoAuthenticationProvider);
         mockMvc = MockMvcBuilders
                 .standaloneSetup(userService)
                 .build();
     }
 
     @Test
-    public void userNotExists() throws Exception {
-        Mockito.when(userRepository.findByEmail("unit@mail.ru")).thenReturn(null);
-
-        Assert.assertEquals(false, userService.userExists("unit@mail.ru"));
-    }
-
-    @Test
-    public void userExists() throws Exception {
-        UserLogRegDTO userLogRegDTO = new UserLogRegDTO("unit@mail.ru", "123");
-
-        Mockito.when(userRepository.findByEmail("unit@mail.ru")).thenReturn(new User(userLogRegDTO));
-
-        Assert.assertEquals(true, userService.userExists("unit@mail.ru"));
-    }
-
-    @Test
-    public void findByEmail() throws Exception {
+    public void findByEmail(){
         String email = "unit@mail.ru";
 
         Mockito.when(userRepository.findByEmail(email)).thenReturn(new User("unit@mail.ru", "123"));
 
-        Assert.assertEquals(new User("unit@mail.ru", "123"), userService.findByEmail(email));
+        Assertions.assertEquals(new User("unit@mail.ru", "123"), userService.findByEmail(email));
     }
+
+    @Test
+    public void regEmailExistsInDb(){
+        UserLogRegDTO existingUser = new UserLogRegDTO("existing@mail.ru", "123");
+
+        Mockito.when(userRepository.findByEmail(existingUser.getEmail())).thenReturn(new User(existingUser));
+
+        Assertions.assertEquals(ResponseEntity.status(HttpStatus.CONFLICT).body("Email is already in use")
+                , userService.registerUser(existingUser));
+
+        verify(userRepository, never()).save(any(User.class));
+    }
+
+    @Test
+    public void regEmailNotExistsInDb(){
+        UserLogRegDTO existingUser = new UserLogRegDTO("existing@mail.ru", "123");
+
+        Mockito.when(userRepository.findByEmail(existingUser.getEmail())).thenReturn(null);
+
+        Assertions.assertEquals(ResponseEntity.status(HttpStatus.OK).body("Registered")
+                , userService.registerUser(existingUser));
+    }
+
+    @Test
+    public void encodingTest(){
+        User user = new User("existing@mail.ru", "123");
+        String passwordBeforeEnc  = user.getPassword();
+        userService.addUser(user);
+
+        ArgumentCaptor<User> requestCaptor = ArgumentCaptor.forClass(User.class);
+        verify(userRepository).save(requestCaptor.capture());
+        String passwordAfterEnc = requestCaptor.getValue().getPassword();
+
+        Assertions.assertNotEquals(passwordBeforeEnc, passwordAfterEnc);
+    }
+
+
 }

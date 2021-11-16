@@ -13,7 +13,7 @@ public interface GoodsRepository extends JpaRepository<Goods,Long> {
     Goods findByTitle(String title);
 
     @Override
-    @Lock(LockModeType.PESSIMISTIC_READ)
+    //@Lock(LockModeType.PESSIMISTIC_READ)
     Optional<Goods> findById(Long id);
 
     //@Override

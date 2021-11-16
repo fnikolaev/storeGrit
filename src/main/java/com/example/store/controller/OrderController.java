@@ -45,7 +45,7 @@ public class OrderController {
      * @return @return {@link org.springframework.http.HttpEntity} + {@link HttpStatus}.
      */
     @DeleteMapping("/delete")
-    public ResponseEntity deleteOrder(Long id) {
+    public ResponseEntity<String> deleteOrder(Long id) {
         orderService.deleteOrder(id);
         return ResponseEntity.ok("deleted");
     }

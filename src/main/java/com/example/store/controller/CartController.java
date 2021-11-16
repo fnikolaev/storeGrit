@@ -47,7 +47,7 @@ public class CartController {
         return ResponseEntity.ok(response.getCart());
     }
 
-    /***
+    /**
      * Adds goods to user's cart
      *
      * @param cartAdditionDTO DTO containing id of goods and quantity.
@@ -55,7 +55,6 @@ public class CartController {
      */
     @PostMapping("/add")
     public ResponseEntity<String> addToCart(@Valid @RequestBody CartAdditionDTO cartAdditionDTO) {
-
         if (cartRecordService.addRecord(cartAdditionDTO)) {
             return ResponseEntity.ok("goods added to cart");
         }
@@ -69,7 +68,7 @@ public class CartController {
      * @return {@link org.springframework.http.HttpEntity} + {@link HttpStatus}.
      */
     @DeleteMapping("/delete")
-    public ResponseEntity deleteCartRecord(String title) {
+    public ResponseEntity<String> deleteCartRecord(String title) {
         cartRecordService.deleteRecord(goodsService.goodsByTitle(title).getId());
         return ResponseEntity.ok("deleted from cart");
     }
@@ -81,11 +80,8 @@ public class CartController {
      * @return {@link org.springframework.http.HttpEntity} + {@link HttpStatus}.
      */
     @PatchMapping("/update")
-    public ResponseEntity updateCartRecord(@Valid @RequestBody CartAdditionDTO cartAdditionDTO) {
-        if(cartRecordService.updateRecord(cartAdditionDTO)){
-            return ResponseEntity.ok("cart updated");
-        }
-        return new ResponseEntity(null, HttpStatus.BAD_REQUEST);
+    public ResponseEntity<String> updateCartRecord(@Valid @RequestBody CartAdditionDTO cartAdditionDTO) {
+        return cartRecordService.updateRecord(cartAdditionDTO);
     }
 
     /**
@@ -95,10 +91,10 @@ public class CartController {
      * @return {@link org.springframework.http.HttpEntity} + {@link HttpStatus}.
      */
     @PostMapping("/order")
-    public ResponseEntity createOrder(Principal principal) {
+    public ResponseEntity<String> createOrder(Principal principal) {
         if(orderService.createOrder(userService.findByEmail(principal.getName()))){
-            return ResponseEntity.ok("order created");
+            return ResponseEntity.ok("Order created");
         }
-        return new ResponseEntity(null, HttpStatus.BAD_REQUEST);
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Not enough goods in store");
     }
 }
