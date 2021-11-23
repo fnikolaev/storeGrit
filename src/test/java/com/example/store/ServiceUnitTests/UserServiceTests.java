@@ -22,8 +22,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.*;
 
 
 @ExtendWith(MockitoExtension.class)
@@ -86,6 +85,8 @@ public class UserServiceTests {
     public void encodingTest(){
         User user = new User("existing@mail.ru", "123");
         String passwordBeforeEnc  = user.getPassword();
+
+        when(bCryptPasswordEncoder.encode(any())).thenReturn("$23fwcwce2f3fvs");
         userService.addUser(user);
 
         ArgumentCaptor<User> requestCaptor = ArgumentCaptor.forClass(User.class);

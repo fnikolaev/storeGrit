@@ -2,12 +2,10 @@ package com.example.store.ServiceUnitTests;
 
 import com.example.store.dto.CartAdditionDTO;
 import com.example.store.entity.CartRecord;
-import com.example.store.entity.Goods;
 import com.example.store.repository.GoodsRepository;
 import com.example.store.service.CartRecordService;
 import com.example.store.service.GoodsService;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.junit.Assert;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -41,7 +39,7 @@ public class CartRecordServiceTest {
 
 
     @BeforeEach
-    public void setUp(){
+    public void setUp() {
         cartRecordService = new CartRecordService(cartRecords, goodsRepository, goodsService);
         mockMvc = MockMvcBuilders
                 .standaloneSetup(cartRecordService)
@@ -49,7 +47,7 @@ public class CartRecordServiceTest {
     }
 
     @Test
-    public void notEnougthGoodsToAddRecord(){
+    public void notEnougthGoodsToAddRecord() {
         CartAdditionDTO cartAdditionDTO = new CartAdditionDTO(1L, 15L);
 
         Mockito.when(goodsService.enoughQuantity(cartAdditionDTO)).thenReturn(false);
@@ -59,31 +57,60 @@ public class CartRecordServiceTest {
         verify(goodsService).enoughQuantity(cartAdditionDTO);
     }
 
-    //@Test
-    public void enougthGoodsToAddRecordNew(){
+    @Test
+    public void enougthGoodsToAddRecordNew() {
         CartAdditionDTO cartAdditionDTO = new CartAdditionDTO(1L, 15L);
 
         Mockito.when(goodsService.enoughQuantity(cartAdditionDTO)).thenReturn(true);
-        Mockito.when(cartRecords.getRecords()).thenReturn(Map.of(2L,2L));
+        Mockito.when(cartRecords.getRecords()).thenReturn(new HashMap<>(Map.of(2L, 2L)));
 
         Assertions.assertTrue(cartRecordService.addRecord(cartAdditionDTO));
 
-        verify(cartRecords,times(2)).getRecords();
+        verify(cartRecords, times(2)).getRecords();
         verify(goodsService).enoughQuantity(any(CartAdditionDTO.class));
     }
 
-    //@Test
-    public void renougthGoodsToAddRecordNew(){
+    @Test
+    public void enougthGoodsToAddRecordExisting() {
         CartAdditionDTO cartAdditionDTO = new CartAdditionDTO(1L, 15L);
 
         Mockito.when(goodsService.enoughQuantity(cartAdditionDTO)).thenReturn(true);
-        Mockito.when(cartRecords.getRecords()).thenReturn(Map.of(1L,2L));
-        Mockito.when(goodsService.enoughQuantity(new CartAdditionDTO(cartAdditionDTO.getId(), 15L+2L)))
+        Mockito.when(cartRecords.getRecords()).thenReturn(new HashMap<>(Map.of(1L, 2L)));
+        Mockito.when(goodsService.enoughQuantity(new CartAdditionDTO(cartAdditionDTO.getId(), 15L + 2L)))
                 .thenReturn(true);
 
-
         Assertions.assertTrue(cartRecordService.addRecord(cartAdditionDTO));
-        //cartRecordService.addRecord(cartAdditionDTO);
-        verify(goodsService,times(2)).enoughQuantity(any(CartAdditionDTO.class));
+
+        verify(cartRecords, times(3)).getRecords();
+        verify(goodsService, times(2)).enoughQuantity(any(CartAdditionDTO.class));
+    }
+
+    @Test
+    public void notEnougthGoodsToAddRecordExisting() {
+        CartAdditionDTO cartAdditionDTO = new CartAdditionDTO(1L, 15L);
+
+        Mockito.when(goodsService.enoughQuantity(cartAdditionDTO)).thenReturn(true);
+        Mockito.when(cartRecords.getRecords()).thenReturn(new HashMap<>(Map.of(1L, 2L)));
+        Mockito.when(goodsService.enoughQuantity(new CartAdditionDTO(cartAdditionDTO.getId(), 15L + 2L)))
+                .thenReturn(false);
+
+        Assertions.assertFalse(cartRecordService.addRecord(cartAdditionDTO));
+
+        verify(cartRecords, times(2)).getRecords();
+        verify(goodsService, times(2)).enoughQuantity(any(CartAdditionDTO.class));
+    }
+
+
+
+    @Test
+    public void checkAvailableTest() {
+        Map<Long, Long> records = new HashMap<>(Map.of(1L, 2L, 2L, 2L));
+
+        Mockito.when(cartRecords.getRecords()).thenReturn(records);
+        Mockito.when(goodsService.enoughQuantity(any())).thenReturn(true);
+
+        Assertions.assertTrue(cartRecordService.checkAvailable());
+
+        verify(goodsService, times(2)).enoughQuantity(any());
     }
 }
